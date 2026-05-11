@@ -179,6 +179,10 @@ const translations = {
     contact_title: "اتصل بنا",
     login_title: "تسجيل دخول المشرف",
     hero_subtitle: "رحلات مميزة بأسعار تنافسية من منوبة وادي الليل",
+    hero_stat_travelers: "مسافر",
+    hero_stat_satisfaction: "رضا",
+    hero_stat_destinations: "وجهة",
+    hero_stat_support: "دعم",
 
     // ── Footer contact ───────────────────────────────────────────────────────
     footer_agency_full_name: "ضيافة للسياحة – فرع منوبة وادي الليل",
@@ -351,6 +355,10 @@ const translations = {
     contact_title: "Contactez-nous",
     login_title: "Connexion administrateur",
     hero_subtitle: "Des voyages d'exception à des prix compétitifs depuis Manouba Oued Ellil",
+    hero_stat_travelers: "Voyageurs",
+    hero_stat_satisfaction: "Satisfaction",
+    hero_stat_destinations: "Destinations",
+    hero_stat_support: "Assistance",
 
     // ── Footer contact ───────────────────────────────────────────────────────
     footer_agency_full_name: "Dheyafa Tourism – Agence Manouba Oued Ellil",

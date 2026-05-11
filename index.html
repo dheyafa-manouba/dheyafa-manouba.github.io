@@ -102,29 +102,37 @@
   <!-- ===== End Shared Header ===== -->
 
   <!-- Main page content -->
-  <main id="main-content">
+  <main id="main-content" class="home-main">
 
-    <!-- ===== Hero Banner ===== -->
-    <section class="hero-banner" aria-labelledby="hero-heading">
-      <!-- Real photo background -->
-      <div class="hero-banner-bg" style="background-image: url('img/omra_group_image.jpg');" role="img"
-        aria-label="مجموعة من الحجاج أمام الكعبة المشرفة"></div>
-      <!-- Dark overlay for text legibility -->
+    <section class="hero-banner home-hero" aria-labelledby="hero-heading">
+      <div class="hero-banner-bg" style="background-image: url('img/hotel_ (5).jpg');" role="img"
+        aria-label="مشهد سفر فاخر"></div>
+      <div class="hero-banner-bg hero-banner-bg-alt" aria-hidden="true"></div>
       <div class="hero-banner-overlay" aria-hidden="true"></div>
-      <!-- Content -->
       <div class="hero-banner-content">
-        <h1 id="hero-heading" data-i18n="footer_agency_full_name">ضيافة للسياحة – فرع منوبة وادي الليل</h1>
+        <p class="uppercase tracking-[0.3em] text-xs sm:text-sm text-white/85 mb-3">Dheyafa Signature Journeys</p>
+        <h1 id="hero-heading">رحلات استثنائية بتجربة عالمية فاخرة</h1>
         <p data-i18n="hero_subtitle">رحلات مميزة بأسعار تنافسية من منوبة وادي الليل</p>
-        <div class="flex flex-wrap gap-3 justify-center mt-3">
-          <a href="voyages.html"
-            class="inline-flex items-center justify-center min-h-[44px] px-6 py-2 bg-accent text-white font-semibold rounded hover:bg-accent-dark transition-colors text-lg"
-            data-i18n="nav_voyages">الرحلات</a>
-          <a href="omra.html"
-            class="inline-flex items-center justify-center min-h-[44px] px-6 py-2 border-2 border-white text-white font-semibold rounded hover:bg-white/25 transition-colors text-lg bg-white/10"
-            data-i18n="nav_omra">عمرة</a>
+        <div class="signature-journeys-grid grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mt-6 max-w-3xl mx-auto">
+          <div class="signature-stat">
+            <p class="signature-stat-value" data-count-to="1200" data-count-suffix="+">1200+</p>
+            <p class="signature-stat-label" data-i18n="hero_stat_travelers">مسافر</p>
+          </div>
+          <div class="signature-stat">
+            <p class="signature-stat-value" data-count-to="98" data-count-suffix="%">98%</p>
+            <p class="signature-stat-label" data-i18n="hero_stat_satisfaction">رضا</p>
+          </div>
+          <div class="signature-stat">
+            <p class="signature-stat-value" data-count-to="45" data-count-suffix="+">45+</p>
+            <p class="signature-stat-label" data-i18n="hero_stat_destinations">وجهة</p>
+          </div>
+          <div class="signature-stat">
+            <p class="signature-stat-value">24/7</p>
+            <p class="signature-stat-label" data-i18n="hero_stat_support">دعم</p>
+          </div>
         </div>
-        <div class="luxury-panel mt-6 p-3 sm:p-4 text-start">
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+        <div class="luxury-panel mt-7 p-3 sm:p-4 text-start max-w-5xl mx-auto">
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
             <div class="md:col-span-2">
               <label for="hero-destination" class="text-sm text-white/95 mb-1">الوجهة</label>
               <input id="hero-destination" type="text" placeholder="ابحث عن رحلة أو عمرة"
@@ -135,43 +143,49 @@
               <input id="hero-departure" type="date"
                 class="w-full min-h-[44px] rounded-xl border border-white/35 bg-white/95 px-4 text-text focus:outline-none focus:ring-2 focus:ring-accent/40">
             </div>
+            <div>
+              <label for="hero-budget" class="text-sm text-white/95 mb-1">الميزانية</label>
+              <select id="hero-budget"
+                class="w-full min-h-[44px] rounded-xl border border-white/35 bg-white/95 px-4 text-text">
+                <option>كل الميزانيات</option>
+                <option>اقتصادية</option>
+                <option>مميزة</option>
+                <option>فاخرة</option>
+              </select>
+            </div>
             <a href="voyages.html"
               class="inline-flex min-h-[44px] w-full items-center justify-center rounded-xl bg-primary px-4 py-2 font-semibold text-white hover:bg-primary-dark transition-colors">ابدأ
               البحث</a>
           </div>
         </div>
-      </div>
-    </section>
-    <!-- ===== End Hero Banner ===== -->
-
-    <!-- ===== Photo Gallery Strip ===== -->
-    <section class="py-4 bg-bg-alt" aria-label="معرض الصور">
-      <div class="mx-auto px-4 max-w-7xl">
-        <div class="photo-strip">
-          <div class="photo-strip-item">
-            <img src="img/group_image_by_the_kaaba.jpg" alt="مجموعة من الحجاج بجانب الكعبة المشرفة" loading="lazy">
-          </div>
-          <div class="photo-strip-item">
-            <img src="img/group_image_jabal_alrahma.jpg" alt="مجموعة على جبل الرحمة" loading="lazy">
-          </div>
-          <div class="photo-strip-item">
-            <img src="img/group_image_safa_wal_marwa.jpg" alt="مجموعة عند الصفا والمروة" loading="lazy">
-          </div>
-          <div class="photo-strip-item">
-            <img src="img/king_saud_gate_groupe_image.jpg" alt="مجموعة عند بوابة الملك سعود" loading="lazy">
-          </div>
-          <div class="photo-strip-item">
-            <img src="img/aeroport_omra.jpg" alt="المجموعة في المطار" loading="lazy">
-          </div>
-          <div class="photo-strip-item">
-            <img src="img/group_image_with_pigeons.jpg" alt="مجموعة مع الحمام في الحرم" loading="lazy">
-          </div>
+        <div class="flex flex-wrap gap-3 justify-center mt-5">
+          <a href="voyages.html"
+            class="inline-flex items-center justify-center min-h-[44px] px-6 py-2 bg-accent text-white font-semibold rounded-xl hover:bg-accent-dark transition-colors text-lg"
+            data-i18n="nav_voyages">الرحلات</a>
+          <a href="omra.html"
+            class="inline-flex items-center justify-center min-h-[44px] px-6 py-2 border border-white/60 text-white font-semibold rounded-xl hover:bg-white/20 transition-colors text-lg bg-white/10"
+            data-i18n="nav_omra">عمرة</a>
         </div>
       </div>
     </section>
-    <!-- ===== End Photo Gallery Strip ===== -->
 
-    <!-- ===== Agency Info Section ===== -->
+    <section class="py-6" aria-label="معرض الصور">
+      <div class="mx-auto px-4 max-w-7xl">
+        <div class="photo-strip">
+          <div class="photo-strip-item"><img src="img/group_image_by_the_kaaba.jpg"
+              alt="مجموعة من الحجاج بجانب الكعبة المشرفة" loading="lazy"></div>
+          <div class="photo-strip-item"><img src="img/group_image_jabal_alrahma.jpg" alt="مجموعة على جبل الرحمة"
+              loading="lazy"></div>
+          <div class="photo-strip-item"><img src="img/group_image_safa_wal_marwa.jpg" alt="مجموعة عند الصفا والمروة"
+              loading="lazy"></div>
+          <div class="photo-strip-item"><img src="img/king_saud_gate_groupe_image.jpg" alt="مجموعة عند بوابة الملك سعود"
+              loading="lazy"></div>
+          <div class="photo-strip-item"><img src="img/hotel_ (2).jpg" alt="فندق فاخر" loading="lazy"></div>
+          <div class="photo-strip-item"><img src="img/hotel_ (4).jpg" alt="منتجع سفر" loading="lazy"></div>
+        </div>
+      </div>
+    </section>
+
     <section class="py-12 about-section" aria-labelledby="about-heading">
       <div class="mx-auto px-4 max-w-7xl">
         <h2 id="about-heading" class="section-title">
@@ -226,9 +240,28 @@
         </div>
       </div>
     </section>
-    <!-- ===== End Agency Info Section ===== -->
 
-    <!-- ===== Achievements Section ===== -->
+    <section class="py-12">
+      <div class="mx-auto px-4 max-w-7xl">
+        <h2 class="section-title">لماذا ضيافة؟</h2>
+        <hr class="section-divider" />
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <article class="luxury-panel p-5 reveal-stagger">
+            <h3 class="text-xl font-bold text-primary-dark">تخطيط ذكي</h3>
+            <p class="text-text-muted">نصمم رحلتك حسب أسلوبك وميزانيتك مع جدول واضح وخيارات موثوقة.</p>
+          </article>
+          <article class="luxury-panel p-5 reveal-stagger">
+            <h3 class="text-xl font-bold text-primary-dark">شركاء فاخرون</h3>
+            <p class="text-text-muted">شبكة فنادق ونقل وتجارب مختارة لتقديم أعلى جودة خدمة.</p>
+          </article>
+          <article class="luxury-panel p-5 reveal-stagger">
+            <h3 class="text-xl font-bold text-primary-dark">دعم مستمر</h3>
+            <p class="text-text-muted">فريق مرافقة قبل السفر وأثناء الرحلة وبعد العودة لضمان راحة كاملة.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
     <section class="py-10" aria-labelledby="achievements-heading">
       <div class="mx-auto px-4 max-w-7xl">
         <h2 id="achievements-heading" class="section-title" data-i18n="achievements_title">إنجازاتنا</h2>
@@ -255,7 +288,46 @@
         </div>
       </div>
     </section>
-    <!-- ===== End Achievements Section ===== -->
+
+    <section class="py-12">
+      <div class="mx-auto px-4 max-w-7xl">
+        <h2 class="section-title">آراء المسافرين</h2>
+        <hr class="section-divider" />
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <blockquote class="luxury-panel p-5">
+            <p class="text-text-muted">"تنظيم ممتاز وتجربة راقية من البداية للنهاية."</p>
+            <footer class="mt-3 font-semibold text-primary-dark">- آية، تونس</footer>
+          </blockquote>
+          <blockquote class="luxury-panel p-5">
+            <p class="text-text-muted">"أفضل تجربة عمرة مع متابعة دقيقة وسهولة كبيرة."</p>
+            <footer class="mt-3 font-semibold text-primary-dark">- سليم، منوبة</footer>
+          </blockquote>
+          <blockquote class="luxury-panel p-5">
+            <p class="text-text-muted">"تفاصيل مدروسة وفنادق ممتازة وأسعار تنافسية."</p>
+            <footer class="mt-3 font-semibold text-primary-dark">- Manel, Paris</footer>
+          </blockquote>
+        </div>
+      </div>
+    </section>
+
+    <section class="py-12">
+      <div class="mx-auto px-4 max-w-7xl">
+        <div class="luxury-panel p-6 sm:p-8 text-center">
+          <p class="uppercase tracking-[0.25em] text-xs text-primary-dark/70 mb-2">Explore 2026</p>
+          <h2 class="text-3xl sm:text-4xl font-black text-primary-dark">جاهز لرحلة تليق بك؟</h2>
+          <p class="text-text-muted mt-3 max-w-2xl mx-auto">احجز استشارة مجانية مع فريقنا لاختيار أفضل برنامج سفر أو
+            عمرة خلال دقائق.</p>
+          <div class="flex flex-wrap justify-center gap-3 mt-6">
+            <a href="contact.html"
+              class="inline-flex min-h-[44px] items-center justify-center rounded-xl bg-primary px-6 py-2 font-semibold text-white hover:bg-primary-dark transition-colors">تحدث
+              مع مستشار سفر</a>
+            <a href="voyages.html"
+              class="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-primary/35 bg-white/70 px-6 py-2 font-semibold text-primary-dark hover:bg-white transition-colors">استعرض
+              العروض</a>
+          </div>
+        </div>
+      </div>
+    </section>
 
   </main>
 
@@ -430,6 +502,130 @@
   </script>
   <script>
     document.addEventListener('DOMContentLoaded', function () { initNavbar(); });
+  </script>
+  <script>
+    (function () {
+      var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reducedMotion) {
+        return;
+      }
+
+      var hero = document.querySelector('.hero-banner');
+      if (!hero) {
+        return;
+      }
+
+      var layers = hero.querySelectorAll('.hero-banner-bg');
+      if (!layers || layers.length < 2) {
+        return;
+      }
+
+      var images = [
+        'img/mosque (3).jpg',
+        'img/hotel_ (1).jpg',
+        'img/hotel_ (3).jpg',
+        'img/mosque (6).jpg',
+        'img/group_image_by_the_kaaba.jpg'
+      ];
+
+      var current = 0;
+      var activeLayer = 0;
+      layers[0].style.backgroundImage = "url('" + images[current] + "')";
+
+      function swapHeroImage() {
+        var next = (current + 1) % images.length;
+        var incomingLayer = layers[activeLayer === 0 ? 1 : 0];
+        incomingLayer.style.backgroundImage = "url('" + images[next] + "')";
+        hero.classList.toggle('hero-banner-swap');
+        activeLayer = activeLayer === 0 ? 1 : 0;
+        current = next;
+      }
+
+      window.setInterval(swapHeroImage, 5200);
+    })();
+  </script>
+  <script>
+    (function () {
+      var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reducedMotion) {
+        return;
+      }
+
+      var stats = document.querySelectorAll('.signature-stat-value[data-count-to]');
+      var statCards = document.querySelectorAll('.signature-stat');
+      if (!stats.length && !statCards.length) {
+        return;
+      }
+
+      if (!('IntersectionObserver' in window)) {
+        statCards.forEach(function (card) {
+          card.classList.add('is-visible');
+        });
+        return;
+      }
+
+      statCards.forEach(function (card, idx) {
+        card.style.transitionDelay = (idx * 90) + 'ms';
+      });
+
+      function animateValue(el) {
+        if (el.dataset.counted === 'true') {
+          return;
+        }
+
+        var endValue = Number(el.dataset.countTo || 0);
+        var suffix = el.dataset.countSuffix || '';
+        var duration = 1400;
+        var start = null;
+
+        el.dataset.counted = 'true';
+
+        function tick(timestamp) {
+          if (!start) {
+            start = timestamp;
+          }
+
+          var elapsed = timestamp - start;
+          var progress = Math.min(elapsed / duration, 1);
+          var eased = 1 - Math.pow(1 - progress, 3);
+          var current = Math.round(endValue * eased);
+
+          el.textContent = current + suffix;
+
+          if (progress < 1) {
+            window.requestAnimationFrame(tick);
+          }
+        }
+
+        window.requestAnimationFrame(tick);
+      }
+
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) {
+            return;
+          }
+
+          if (entry.target.classList.contains('signature-stat')) {
+            entry.target.classList.add('is-visible');
+          }
+
+          if (entry.target.classList.contains('signature-stat-value')) {
+            animateValue(entry.target);
+          }
+
+          observer.unobserve(entry.target);
+        });
+      }, { threshold: 0.35 });
+
+      stats.forEach(function (stat) {
+        observer.observe(stat);
+      });
+
+      statCards.forEach(function (card) {
+        observer.observe(card);
+      });
+    })();
   </script>
 </body>
 

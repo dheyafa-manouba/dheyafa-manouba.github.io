@@ -139,4 +139,24 @@ function initNavbar() {
 
   syncDesktopState();
   handleScrollState();
+
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    var revealElements = document.querySelectorAll('.reveal-stagger');
+    if (revealElements.length && 'IntersectionObserver' in window) {
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) {
+            return;
+          }
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        });
+      }, { threshold: 0.18 });
+
+      revealElements.forEach(function (item, index) {
+        item.style.transitionDelay = (index * 70) + 'ms';
+        observer.observe(item);
+      });
+    }
+  }
 }
