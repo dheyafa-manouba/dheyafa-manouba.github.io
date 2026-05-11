@@ -7,6 +7,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>تسجيل الدخول – لوحة الإدارة</title>
+  <link rel="icon" type="image/png" href="../img/logo.png" />
   <!-- Tailwind CSS v4 Play CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <style type="text/tailwindcss">
@@ -43,51 +44,53 @@
     <div class="w-full max-w-sm">
 
       <div class="admin-panel p-6 sm:p-7">
-      <!-- Agency branding -->
-      <div class="text-center mb-6">
-        <img src="../img/logo.png" alt="Dheyafa Tourism Logo"
-          style="height:72px;width:auto;object-fit:contain;border-radius:10px;margin-bottom:0.75rem;">
-        <h1 class="text-2xl font-bold mt-2" data-i18n="login_title">تسجيل دخول المشرف</h1>
-        <p class="text-text-muted" data-i18n="agency_name">ضيافة للسياحة</p>
-      </div>
-
-      <!-- Error message area -->
-      <div id="login-error" class="p-3 rounded bg-red-50 border border-red-200 text-danger text-sm hidden" role="alert">
-      </div>
-
-      <!-- Login form -->
-      <form id="login-form" novalidate>
-        <div class="mb-4">
-          <label for="login-email" class="block text-sm font-medium text-text mb-1" data-i18n="form_email_label">البريد
-            الإلكتروني</label>
-          <input type="email"
-            class="w-full border border-border rounded px-3 py-2 text-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 min-h-[44px]"
-            id="login-email" name="email" data-i18n-placeholder="ph_email" required dir="ltr" autocomplete="email">
+        <!-- Agency branding -->
+        <div class="text-center mb-6">
+          <img src="../img/logo.png" alt="Dheyafa Tourism Logo"
+            style="height:72px;width:auto;object-fit:contain;border-radius:10px;margin-bottom:0.75rem;">
+          <h1 class="text-2xl font-bold mt-2" data-i18n="login_title">تسجيل دخول المشرف</h1>
+          <p class="text-text-muted" data-i18n="agency_name">ضيافة للسياحة</p>
         </div>
-        <div class="mb-4">
-          <label for="login-password" class="block text-sm font-medium text-text mb-1" data-i18n="form_password">كلمة
-            المرور</label>
-          <input type="password"
-            class="w-full border border-border rounded px-3 py-2 text-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 min-h-[44px]"
-            id="login-password" name="password" data-i18n-placeholder="ph_password" required
-            autocomplete="current-password">
-        </div>
-        <button type="submit"
-          class="inline-flex items-center justify-center w-full min-h-[44px] px-4 py-2 bg-primary text-white font-semibold rounded hover:bg-primary-dark transition-colors"
-          id="login-btn" data-i18n="btn_sign_in">
-          تسجيل الدخول
-        </button>
-      </form>
 
-      <!-- Language toggle -->
-      <div class="admin-lang-switch text-center mt-4 flex justify-center gap-2">
-        <button
-          class="lang-btn admin-lang-btn min-h-[44px] min-w-[44px] bg-primary-light border border-primary text-primary-dark font-bold text-sm rounded px-3 hover:bg-primary hover:text-white transition-colors"
-          onclick="setLanguage('ar')" aria-label="Switch to Arabic">AR</button>
-        <button
-          class="lang-btn admin-lang-btn min-h-[44px] min-w-[44px] bg-primary-light border border-primary text-primary-dark font-bold text-sm rounded px-3 hover:bg-primary hover:text-white transition-colors"
-          onclick="setLanguage('fr')" aria-label="Switch to French">FR</button>
-      </div>
+        <!-- Error message area -->
+        <div id="login-error" class="p-3 rounded bg-red-50 border border-red-200 text-danger text-sm hidden"
+          role="alert">
+        </div>
+
+        <!-- Login form -->
+        <form id="login-form" novalidate>
+          <div class="mb-4">
+            <label for="login-email" class="block text-sm font-medium text-text mb-1"
+              data-i18n="form_email_label">البريد
+              الإلكتروني</label>
+            <input type="email"
+              class="w-full border border-border rounded px-3 py-2 text-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 min-h-[44px]"
+              id="login-email" name="email" data-i18n-placeholder="ph_email" required dir="ltr" autocomplete="email">
+          </div>
+          <div class="mb-4">
+            <label for="login-password" class="block text-sm font-medium text-text mb-1" data-i18n="form_password">كلمة
+              المرور</label>
+            <input type="password"
+              class="w-full border border-border rounded px-3 py-2 text-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 min-h-[44px]"
+              id="login-password" name="password" data-i18n-placeholder="ph_password" required
+              autocomplete="current-password">
+          </div>
+          <button type="submit"
+            class="inline-flex items-center justify-center w-full min-h-[44px] px-4 py-2 bg-primary text-white font-semibold rounded hover:bg-primary-dark transition-colors"
+            id="login-btn" data-i18n="btn_sign_in">
+            تسجيل الدخول
+          </button>
+        </form>
+
+        <!-- Language toggle -->
+        <div class="admin-lang-switch text-center mt-4 flex justify-center gap-2">
+          <button
+            class="lang-btn admin-lang-btn min-h-[44px] min-w-[44px] bg-primary-light border border-primary text-primary-dark font-bold text-sm rounded px-3 hover:bg-primary hover:text-white transition-colors"
+            onclick="setLanguage('ar')" aria-label="Switch to Arabic">AR</button>
+          <button
+            class="lang-btn admin-lang-btn min-h-[44px] min-w-[44px] bg-primary-light border border-primary text-primary-dark font-bold text-sm rounded px-3 hover:bg-primary hover:text-white transition-colors"
+            onclick="setLanguage('fr')" aria-label="Switch to French">FR</button>
+        </div>
       </div>
 
     </div>
