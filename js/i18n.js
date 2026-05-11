@@ -181,7 +181,7 @@ const translations = {
     hero_subtitle: "رحلات مميزة بأسعار تنافسية من منوبة وادي الليل",
 
     // ── Footer contact ───────────────────────────────────────────────────────
-    footer_agency_full_name: "ذيافة للسياحة – فرع منوبة وادي الليل",
+    footer_agency_full_name: "ضيافة للسياحة – فرع منوبة وادي الليل",
     footer_phone_label: "هاتف",
     footer_email_label: "البريد الإلكتروني",
     footer_facebook_label: "فيسبوك",
