@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<!-- Voyage Detail View: full voyage/Omra details and registration form (shared for both types) -->
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>تفاصيل الرحلة – ضيافة للسياحة</title>
+  <!-- Tailwind CSS v4 Play CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    @theme {
+      --color-primary: #1aace2;
+      --color-primary-dark: #0f86b2;
+      --color-primary-light: #ebf6f5;
+      --color-primary-mid: #5bbee1;
+      --color-accent: #fb9610;
+      --color-accent-dark: #c8740a;
+      --color-accent-light: #ebf6f5;
+      --color-success: #1f7a53;
+      --color-danger: #a53d38;
+      --color-warning: #8a6a1f;
+      --color-text: #163042;
+      --color-text-muted: #4d6776;
+      --color-border: #bfe3ef;
+      --color-bg-alt: #ebf6f5;
+      --color-bg-warm: #f5eec4;
+      --font-size-base: 1.125rem;
+      --font-size-sm: 1rem;
+      --font-size-lg: 1.25rem;
+      --border-radius: 0.5rem;
+      --border-radius-lg: 0.875rem;
+      --touch-target-min: 44px;
+    }
+  </style>
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="css/custom.css" />
+</head>
+
+<body>
+
+  <!-- Skip to main content (accessibility) -->
+  <a class="skip-link" href="#main-content">تخطى إلى المحتوى الرئيسي</a>
+
+  <!-- ===== Shared Header ===== -->
+  <header>
+    <nav class="site-navbar" role="navigation" aria-label="Main navigation">
+      <div class="mx-auto max-w-7xl px-3 sm:px-4">
+        <div class="nav-shell flex items-center justify-between gap-3 sm:gap-4">
+        <!-- Brand / Logo -->
+        <a class="nav-brand flex items-center gap-2.5 text-primary-dark min-h-[44px] no-underline"
+          href="index.html">
+          <img src="img/logo.png" alt="Dheyafa Tourism Logo" class="navbar-logo">
+          <span class="nav-brand-text" data-i18n="agency_name">ضيافة للسياحة</span>
+        </a>
+
+        <!-- Mobile toggle -->
+        <button
+          class="navbar-toggler sm:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-transparent cursor-pointer"
+          type="button" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="hamburger" aria-hidden="true">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+          </span>
+        </button>
+
+        <!-- Nav links + language toggle -->
+        <div
+          class="nav-menu hidden sm:flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 absolute sm:static top-full left-0 right-0 z-50"
+          id="mainNav">
+          <ul class="navbar-nav flex flex-col sm:flex-row list-none m-0 p-0 gap-1 sm:gap-1.5">
+            <li>
+              <a class="nav-link block px-4 py-2 text-primary-dark font-medium rounded-full min-h-[44px] flex items-center"
+                href="index.html" data-i18n="nav_home">الرئيسية</a>
+            </li>
+            <li>
+              <a class="nav-link block px-4 py-2 text-primary-dark font-medium rounded-full min-h-[44px] flex items-center"
+                href="voyages.html" data-i18n="nav_voyages">الرحلات</a>
+            </li>
+            <li>
+              <a class="nav-link block px-4 py-2 text-primary-dark font-medium rounded-full min-h-[44px] flex items-center"
+                href="omra.html" data-i18n="nav_omra">عمرة</a>
+            </li>
+            <li>
+              <a class="nav-link nav-cta block px-4 py-2 text-primary-dark font-medium rounded-full min-h-[44px] flex items-center"
+                href="contact.html" data-i18n="nav_contact">اتصل بنا</a>
+            </li>
+          </ul>
+          <!-- Language toggle -->
+          <div class="nav-lang-switch flex gap-2 items-center mt-1 sm:mt-0 ms-auto">
+            <button
+              class="lang-btn min-h-[44px] min-w-[44px] px-3 text-sm font-bold"
+              onclick="setLanguage('ar')" aria-label="Switch to Arabic">AR</button>
+            <button
+              class="lang-btn min-h-[44px] min-w-[44px] px-3 text-sm font-bold"
+              onclick="setLanguage('fr')" aria-label="Switch to French">FR</button>
+          </div>
+        </div>
+      </div>
+      </div>
+    </nav>
+  </header>
+  <!-- ===== End Shared Header ===== -->
+
+  <!-- Main page content -->
+  <main id="main-content">
+    <div class="mx-auto px-4 max-w-7xl py-12">
+      <!-- Loading spinner -->
+      <div id="detail-loading" class="text-center py-10">
+        <div class="inline-block w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"
+          role="status" aria-label="loading">
+          <span class="sr-only" data-i18n="loading">جارٍ التحميل...</span>
+        </div>
+      </div>
+
+      <!-- Error alert -->
+      <div id="detail-error" class="p-4 rounded bg-red-50 border border-red-200 text-danger text-base hidden"
+        role="alert" data-i18n="err_firebase_unreachable">
+        تعذّر الاتصال بالخادم
+      </div>
+
+      <!-- Voyage not found -->
+      <div id="detail-not-found" class="p-4 rounded bg-yellow-50 border border-yellow-200 text-warning text-base hidden"
+        role="alert" data-i18n="err_voyage_not_found">
+        الرحلة غير موجودة
+      </div>
+
+      <!-- Voyage detail content (hidden until loaded) -->
+      <div id="detail-content" class="hidden space-y-5 sm:space-y-6">
+        <section class="relative overflow-hidden rounded-3xl border border-white/70 bg-white/85 p-5 sm:p-6 shadow-[0_16px_44px_-24px_rgba(26,172,226,0.45)] backdrop-blur-sm">
+          <div class="pointer-events-none absolute inset-0 bg-gradient-to-l from-primary/5 via-transparent to-accent/10"></div>
+          <div class="relative">
+            <h1 id="detail-destination" class="text-2xl sm:text-3xl font-black text-primary-dark leading-tight"></h1>
+            <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <div class="rounded-2xl border border-border/80 bg-white/80 px-3 py-2">
+                <p class="text-[11px] uppercase tracking-wide text-text-muted" data-i18n="form_departure_date">تاريخ المغادرة</p>
+                <p id="detail-dates" class="mt-1 text-sm sm:text-base font-semibold text-text"></p>
+              </div>
+              <div class="rounded-2xl border border-border/80 bg-white/80 px-3 py-2">
+                <p class="text-[11px] uppercase tracking-wide text-text-muted" data-i18n="form_price">السعر</p>
+                <p id="detail-price" class="mt-1 text-sm sm:text-base font-semibold text-primary-dark"></p>
+              </div>
+              <div class="rounded-2xl border border-border/80 bg-white/80 px-3 py-2">
+                <p class="text-[11px] uppercase tracking-wide text-text-muted" data-i18n="available_seats">المقاعد المتاحة</p>
+                <p id="detail-seats" class="mt-1 text-sm sm:text-base font-semibold text-text"></p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div class="flex flex-col lg:flex-row gap-5 lg:gap-6">
+          <div class="w-full lg:w-7/12">
+            <!-- Voyage info -->
+            <div class="overflow-hidden rounded-3xl border border-white/70 bg-white/90 shadow-[0_14px_38px_-24px_rgba(26,172,226,0.48)] backdrop-blur-sm mb-4 luxury-panel">
+              <div class="p-4 sm:p-5 space-y-4">
+                <section class="rounded-2xl border border-border/70 bg-bg-alt/40 p-3.5 sm:p-4">
+                  <h2 class="text-base sm:text-lg font-bold text-primary-dark mb-2" data-i18n="form_description">الوصف</h2>
+                  <p id="detail-description" class="text-sm sm:text-base text-text-muted leading-7"></p>
+                </section>
+                <section class="rounded-2xl border border-border/70 bg-bg-alt/40 p-3.5 sm:p-4">
+                  <h2 class="text-base sm:text-lg font-bold text-primary-dark mb-2" data-i18n="form_itinerary">البرنامج التفصيلي</h2>
+                  <p id="detail-itinerary" class="text-sm sm:text-base text-text-muted leading-7"></p>
+                </section>
+                <section class="rounded-2xl border border-border/70 bg-bg-alt/40 p-3.5 sm:p-4">
+                  <h2 class="text-base sm:text-lg font-bold text-primary-dark mb-2" data-i18n="form_included_services">الخدمات المشمولة</h2>
+                  <p id="detail-services" class="text-sm sm:text-base text-text-muted leading-7"></p>
+                </section>
+              </div>
+            </div>
+          </div>
+          <div class="w-full lg:w-5/12">
+            <!-- Registration form -->
+            <div class="sticky top-6 overflow-hidden rounded-3xl border border-white/75 bg-white/92 shadow-[0_16px_44px_-24px_rgba(26,172,226,0.5)] backdrop-blur-sm luxury-panel" id="registration-card">
+              <div class="p-4 sm:p-5">
+                <h2 class="text-lg sm:text-xl font-bold text-primary-dark mb-4" data-i18n="btn_register">سجّل الآن</h2>
+
+                <!-- Fully booked message (shown when no seats) -->
+                <div id="fully-booked-msg"
+                  class="p-4 rounded bg-yellow-50 border border-yellow-200 text-warning text-base hidden"
+                  data-i18n="btn_fully_booked">
+                  محجوز بالكامل
+                </div>
+
+                <!-- Registration form -->
+                <form id="registration-form" novalidate>
+                  <input type="hidden" id="reg-voyage-id" name="voyageId">
+                  <input type="hidden" id="reg-voyage-name" name="voyageName">
+
+                  <div class="mb-3.5">
+                    <label for="reg-full-name" class="block text-sm font-medium text-text mb-1"
+                      data-i18n="form_full_name">الاسم الكامل</label>
+                    <input type="text"
+                      class="w-full border border-border/90 rounded-xl px-3 py-2.5 text-base bg-white/90 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 min-h-[44px] transition-colors"
+                      id="reg-full-name" name="fullName" data-i18n-placeholder="ph_full_name" required>
+                    <div class="text-danger text-sm mt-1" id="err-full-name"></div>
+                  </div>
+
+                  <div class="mb-3.5">
+                    <label for="reg-phone" class="block text-sm font-medium text-text mb-1" data-i18n="form_phone">رقم
+                      الهاتف</label>
+                    <input type="tel"
+                      class="w-full border border-border/90 rounded-xl px-3 py-2.5 text-base bg-white/90 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 min-h-[44px] transition-colors"
+                      id="reg-phone" name="phone" data-i18n-placeholder="ph_phone" required dir="ltr">
+                    <div class="text-danger text-sm mt-1" id="err-phone"></div>
+                  </div>
+
+                  <div class="mb-3.5">
+                    <label for="reg-email" class="block text-sm font-medium text-text mb-1"
+                      data-i18n="form_email">البريد الإلكتروني</label>
+                    <input type="email"
+                      class="w-full border border-border/90 rounded-xl px-3 py-2.5 text-base bg-white/90 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 min-h-[44px] transition-colors"
+                      id="reg-email" name="email" data-i18n-placeholder="ph_email" required dir="ltr">
+                    <div class="text-danger text-sm mt-1" id="err-email"></div>
+                  </div>
+
+                  <div class="mb-3.5">
+                    <label for="reg-passport" class="block text-sm font-medium text-text mb-1"
+                      data-i18n="form_passport">رقم جواز السفر</label>
+                    <input type="text"
+                      class="w-full border border-border/90 rounded-xl px-3 py-2.5 text-base bg-white/90 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 min-h-[44px] transition-colors"
+                      id="reg-passport" name="passportNumber" data-i18n-placeholder="ph_passport" required dir="ltr">
+                    <div class="text-danger text-sm mt-1" id="err-passport"></div>
+                  </div>
+
+                  <div class="mb-3.5">
+                    <label for="reg-seats" class="block text-sm font-medium text-text mb-1"
+                      data-i18n="form_seats_requested">عدد المقاعد
+                      المطلوبة</label>
+                    <input type="number"
+                      class="w-full border border-border/90 rounded-xl px-3 py-2.5 text-base bg-white/90 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 min-h-[44px] transition-colors"
+                      id="reg-seats" name="seatsRequested" min="1" value="1" required>
+                    <div class="text-danger text-sm mt-1" id="err-seats"></div>
+                  </div>
+
+                  <!-- Seat availability error -->
+                  <div id="err-seat-availability"
+                    class="p-4 rounded bg-red-50 border border-red-200 text-danger text-base hidden" role="alert"></div>
+
+                  <!-- Success confirmation -->
+                  <div id="reg-success"
+                    class="p-4 rounded bg-green-50 border border-green-200 text-success text-base hidden" role="alert">
+                  </div>
+
+                  <button type="submit"
+                    class="inline-flex items-center justify-center w-full min-h-[44px] px-4 py-2.5 bg-primary text-white font-semibold rounded-xl shadow-[0_10px_24px_-12px_rgba(200,116,10,0.85)] hover:bg-primary-dark hover:shadow-[0_12px_24px_-10px_rgba(173,101,8,0.9)] transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                    id="reg-submit-btn" data-i18n="btn_register">
+                    سجّل الآن
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===== Shared Footer ===== -->
+  <footer class="site-footer mt-10">
+    <div class="mx-auto px-4 max-w-7xl">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
+        <!-- Brand column -->
+        <div class="footer-card p-4 md:p-5 text-center md:text-start transition-all duration-300 hover:-translate-y-1">
+          <img src="img/logo.png" alt="Dheyafa Tourism Logo" class="footer-logo">
+          <div class="footer-brand" data-i18n="footer_agency_full_name">ذيافة للسياحة – فرع منوبة وادي الليل</div>
+          <p class="footer-location mt-2">منوبة وادي الليل، تونس</p>
+        </div>
+        <!-- Contact column -->
+        <div class="footer-card p-4 md:p-5 transition-all duration-300 hover:-translate-y-1">
+          <h3 class="text-white font-semibold mb-3 text-sm md:text-base tracking-wide" data-i18n="footer_contact_us">تواصل معنا</h3>
+          <div class="footer-contact-item">
+            <span class="footer-icon">📞</span>
+            <a class="footer-link" href="tel:+21653244968" dir="ltr">+216 53 244 968</a>
+          </div>
+          <div class="footer-contact-item">
+            <span class="footer-icon">✉️</span>
+            <a class="footer-link" href="mailto:ltrabelsi26@gmail.com" dir="ltr">ltrabelsi26@gmail.com</a>
+          </div>
+        </div>
+        <!-- Social column -->
+        <div class="footer-card p-4 md:p-5 transition-all duration-300 hover:-translate-y-1">
+          <h3 class="text-white font-semibold mb-3 text-sm md:text-base tracking-wide" data-i18n="footer_follow_us">تابعنا</h3>
+          <div class="footer-contact-item">
+            <span class="footer-icon">📘</span>
+            <a class="footer-link" href="https://www.facebook.com/dheyafa.ouedellil" target="_blank" rel="noopener noreferrer"
+              data-i18n="footer_facebook_label">فيسبوك</a>
+          </div>
+        </div>
+      </div>
+      <hr class="footer-divider">
+      <p class="footer-copy" data-i18n="footer_copy">جميع الحقوق محفوظة</p>
+    </div>
+  </footer>
+  <!-- ===== End Shared Footer ===== -->
+
+  <!-- Firebase JS SDK v9 compat -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <!-- Shared JS modules -->
+  <script src="js/firebase-init.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/navbar.js"></script>
+  <script src="js/validation.js"></script>
+
+  <!-- ===== Voyage Detail + Registration Script (Tasks 11.1 & 11.3) ===== -->
+  <script>
+    (function () {
+      "use strict";
+
+      // ── 1. Parse ?id= from the URL ──────────────────────────────────────
+      var params = new URLSearchParams(window.location.search);
+      var voyageId = params.get("id");
+
+      // Helper: show one state panel, hide the others
+      function showState(state) {
+        var states = ["detail-loading", "detail-error", "detail-not-found", "detail-content"];
+        states.forEach(function (id) {
+          var el = document.getElementById(id);
+          if (el) {
+            if (id === state) {
+              el.classList.remove("hidden");
+            } else {
+              el.classList.add("hidden");
+            }
+          }
+        });
+      }
+
+      // ── 2. Guard: no id in URL ──────────────────────────────────────────
+      if (!voyageId) {
+        showState("detail-not-found");
+        return;
+      }
+
+      // ── 3. Read /voyages/{id} from RTDB ────────────────────────────────
+      db.ref("/voyages/" + voyageId).once("value")
+        .then(function (snapshot) {
+          if (!snapshot.exists()) {
+            showState("detail-not-found");
+            return;
+          }
+
+          var voyage = snapshot.val();
+          voyage.id = voyageId;
+
+          renderDetail(voyage);
+        })
+        .catch(function () {
+          showState("detail-error");
+        });
+
+      // ── 4. Render the detail view ───────────────────────────────────────
+      function renderDetail(voyage) {
+        var lang = localStorage.getItem("lang") || "ar";
+
+        // Destination / title
+        document.getElementById("detail-destination").textContent =
+          voyage.destination || "";
+
+        // Dates
+        var depFormatted = formatDate(voyage.departureDate, lang);
+        var retFormatted = formatDate(voyage.returnDate, lang);
+        var datesEl = document.getElementById("detail-dates");
+        if (voyage.type === "omra" && voyage.durationDays) {
+          datesEl.textContent = depFormatted + " — " + voyage.durationDays + " " + t("days_unit");
+        } else {
+          datesEl.textContent = depFormatted + " → " + retFormatted;
+        }
+
+        // Price
+        document.getElementById("detail-price").textContent =
+          voyage.price + " " + t("price_unit");
+
+        // Available seats
+        var seats = voyage.availableSeats;
+        var seatsEl = document.getElementById("detail-seats");
+        if (seats <= 0) {
+          seatsEl.textContent = t("fully_booked");
+          seatsEl.className = "mt-1 text-sm sm:text-base font-semibold text-rose-700";
+        } else {
+          seatsEl.textContent = t("available_seats") + ": " + seats;
+          seatsEl.className = "mt-1 text-sm sm:text-base font-semibold text-emerald-700";
+        }
+
+        // Description, itinerary, services
+        document.getElementById("detail-description").textContent =
+          voyage.description || "";
+        document.getElementById("detail-itinerary").textContent =
+          voyage.itinerary || "";
+        document.getElementById("detail-services").textContent =
+          voyage.includedServices || "";
+
+        // Populate hidden form fields
+        document.getElementById("reg-voyage-id").value = voyageId;
+        document.getElementById("reg-voyage-name").value = voyage.destination || "";
+
+        // Handle fully booked state
+        if (seats <= 0) {
+          document.getElementById("fully-booked-msg").classList.remove("hidden");
+          document.getElementById("registration-form").classList.add("hidden");
+          var submitBtn = document.getElementById("reg-submit-btn");
+          submitBtn.disabled = true;
+          submitBtn.setAttribute("data-i18n", "btn_fully_booked");
+          submitBtn.textContent = t("btn_fully_booked");
+        }
+
+        // Show the content panel
+        showState("detail-content");
+
+        // Re-apply i18n so any newly visible [data-i18n] elements are translated
+        setLanguage(lang);
+      }
+
+      // ── 5. Registration form submission ────────────────────────────────
+      document.getElementById("registration-form").addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        // Clear previous errors
+        clearFormErrors();
+
+        // Collect form data
+        var formData = {
+          voyageId: document.getElementById("reg-voyage-id").value,
+          voyageName: document.getElementById("reg-voyage-name").value,
+          fullName: document.getElementById("reg-full-name").value,
+          phone: document.getElementById("reg-phone").value,
+          email: document.getElementById("reg-email").value,
+          passportNumber: document.getElementById("reg-passport").value,
+          seatsRequested: parseInt(document.getElementById("reg-seats").value, 10)
+        };
+
+        // Client-side validation
+        var result = validateRegistrationForm(formData);
+        if (!result.valid) {
+          showFormErrors(result.errors);
+          return;
+        }
+
+        // Disable submit button to prevent double-submission
+        var submitBtn = document.getElementById("reg-submit-btn");
+        submitBtn.disabled = true;
+
+        // Read current availableSeats from RTDB before writing
+        db.ref("/voyages/" + voyageId + "/availableSeats").once("value")
+          .then(function (snap) {
+            var currentSeats = snap.val() || 0;
+
+            if (formData.seatsRequested > currentSeats) {
+              // Not enough seats
+              var seatErrEl = document.getElementById("err-seat-availability");
+              seatErrEl.textContent = t("err_not_enough_seats") + " (" + currentSeats + " " + t("seats_unit") + ")";
+              seatErrEl.classList.remove("hidden");
+              submitBtn.disabled = false;
+              return;
+            }
+
+            // Build registration record
+            var registration = {
+              voyageId: formData.voyageId,
+              voyageName: formData.voyageName,
+              fullName: formData.fullName,
+              phone: formData.phone,
+              email: formData.email,
+              passportNumber: formData.passportNumber,
+              seatsRequested: formData.seatsRequested,
+              status: "pending",
+              createdAt: Date.now()
+            };
+
+            // Push to /registrations/{pushId}
+            return db.ref("/registrations").push(registration)
+              .then(function () {
+                // Show success confirmation
+                showSuccess(formData);
+              });
+          })
+          .catch(function () {
+            submitBtn.disabled = false;
+            showToast(t("err_firebase_unreachable"), "danger");
+          });
+      });
+
+      // ── Helpers ─────────────────────────────────────────────────────────
+
+      function clearFormErrors() {
+        // Remove .is-invalid from all inputs
+        var inputs = document.querySelectorAll("#registration-form input, #registration-form select, #registration-form textarea");
+        inputs.forEach(function (input) {
+          input.classList.remove("is-invalid");
+        });
+        // Clear error text
+        ["err-full-name", "err-phone", "err-email", "err-passport", "err-seats"].forEach(function (id) {
+          var el = document.getElementById(id);
+          if (el) el.textContent = "";
+        });
+        // Hide seat availability error
+        var seatErr = document.getElementById("err-seat-availability");
+        if (seatErr) seatErr.classList.add("hidden");
+      }
+
+      // Map validation error keys to DOM element IDs
+      var fieldErrorMap = {
+        fullName: { inputId: "reg-full-name", errId: "err-full-name" },
+        phone: { inputId: "reg-phone", errId: "err-phone" },
+        email: { inputId: "reg-email", errId: "err-email" },
+        passportNumber: { inputId: "reg-passport", errId: "err-passport" },
+        seatsRequested: { inputId: "reg-seats", errId: "err-seats" }
+      };
+
+      function showFormErrors(errors) {
+        Object.keys(errors).forEach(function (field) {
+          var mapping = fieldErrorMap[field];
+          if (!mapping) return;
+          var inputEl = document.getElementById(mapping.inputId);
+          var errEl = document.getElementById(mapping.errId);
+          if (inputEl) inputEl.classList.add("is-invalid");
+          if (errEl) errEl.textContent = errors[field];
+        });
+      }
+
+      function showSuccess(formData) {
+        // Hide the form
+        document.getElementById("registration-form").classList.add("hidden");
+
+        // Build confirmation message
+        var lang = localStorage.getItem("lang") || "ar";
+        var successEl = document.getElementById("reg-success");
+        var voyageName = document.getElementById("reg-voyage-name").value;
+
+        var msg = t("confirm_registration_success") + "\n\n" +
+          t("form_full_name") + ": " + formData.fullName + "\n" +
+          t("form_phone") + ": " + formData.phone + "\n" +
+          t("form_email") + ": " + formData.email + "\n" +
+          t("form_passport") + ": " + formData.passportNumber + "\n" +
+          t("form_seats_requested") + ": " + formData.seatsRequested + "\n" +
+          t("nav_voyages") + ": " + voyageName;
+
+        // Use <br> for line breaks in HTML
+        successEl.innerHTML = msg.replace(/\n/g, "<br>");
+        successEl.classList.remove("hidden");
+      }
+
+    })();
+  </script>
+  <!-- ===== End Voyage Detail + Registration Script ===== -->
+
+  <script>document.addEventListener('DOMContentLoaded', function () { initNavbar(); });</script>
+</body>
+
+</html>

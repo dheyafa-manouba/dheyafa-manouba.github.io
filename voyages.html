@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<!-- Public Voyages Listing: list of active voyage packages -->
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>الرحلات – ضيافة للسياحة</title>
+  <!-- Tailwind CSS v4 Play CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    @theme {
+      --color-primary: #1aace2;
+      --color-primary-dark: #0f86b2;
+      --color-primary-light: #ebf6f5;
+      --color-primary-mid: #5bbee1;
+      --color-accent: #fb9610;
+      --color-accent-dark: #c8740a;
+      --color-accent-light: #ebf6f5;
+      --color-success: #1f7a53;
+      --color-danger: #a53d38;
+      --color-warning: #8a6a1f;
+      --color-text: #163042;
+      --color-text-muted: #4d6776;
+      --color-border: #bfe3ef;
+      --color-bg-alt: #ebf6f5;
+      --color-bg-warm: #f5eec4;
+      --font-size-base: 1.125rem;
+      --font-size-sm: 1rem;
+      --font-size-lg: 1.25rem;
+      --border-radius: 0.5rem;
+      --border-radius-lg: 0.875rem;
+      --touch-target-min: 44px;
+    }
+  </style>
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="css/custom.css" />
+</head>
+
+<body>
+
+  <!-- Skip to main content (accessibility) -->
+  <a class="skip-link" href="#main-content">تخطى إلى المحتوى الرئيسي</a>
+
+  <!-- ===== Shared Header ===== -->
+  <header>
+    <nav class="site-navbar" role="navigation" aria-label="Main navigation">
+      <div class="mx-auto max-w-7xl px-3 sm:px-4">
+        <div class="nav-shell flex items-center justify-between gap-3 sm:gap-4">
+        <!-- Brand / Logo -->
+        <a class="nav-brand flex items-center gap-2.5 text-primary-dark min-h-[44px] no-underline"
+          href="index.html">
+          <img src="img/logo.png" alt="Dheyafa Tourism Logo" class="navbar-logo">
+          <span class="nav-brand-text" data-i18n="agency_name">ضيافة للسياحة</span>
+        </a>
+
+        <!-- Mobile toggle -->
+        <button
+          class="navbar-toggler sm:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-transparent cursor-pointer"
+          type="button" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="hamburger" aria-hidden="true">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+          </span>
+        </button>
+
+        <!-- Nav links + language toggle -->
+        <div
+          class="nav-menu hidden sm:flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 absolute sm:static top-full left-0 right-0 z-50"
+          id="mainNav">
+          <ul class="navbar-nav flex flex-col sm:flex-row list-none m-0 p-0 gap-1 sm:gap-1.5">
+            <li>
+              <a class="nav-link block px-4 py-2 text-primary-dark font-medium rounded-full min-h-[44px] flex items-center"
+                href="index.html" data-i18n="nav_home">الرئيسية</a>
+            </li>
+            <li>
+              <a class="nav-link block px-4 py-2 text-primary-dark font-medium rounded-full min-h-[44px] flex items-center active"
+                aria-current="page" href="voyages.html" data-i18n="nav_voyages">الرحلات</a>
+            </li>
+            <li>
+              <a class="nav-link block px-4 py-2 text-primary-dark font-medium rounded-full min-h-[44px] flex items-center"
+                href="omra.html" data-i18n="nav_omra">عمرة</a>
+            </li>
+            <li>
+              <a class="nav-link nav-cta block px-4 py-2 text-primary-dark font-medium rounded-full min-h-[44px] flex items-center"
+                href="contact.html" data-i18n="nav_contact">اتصل بنا</a>
+            </li>
+          </ul>
+          <!-- Language toggle -->
+          <div class="nav-lang-switch flex gap-2 items-center mt-1 sm:mt-0 ms-auto">
+            <button
+              class="lang-btn min-h-[44px] min-w-[44px] px-3 text-sm font-bold"
+              onclick="setLanguage('ar')" aria-label="Switch to Arabic">AR</button>
+            <button
+              class="lang-btn min-h-[44px] min-w-[44px] px-3 text-sm font-bold"
+              onclick="setLanguage('fr')" aria-label="Switch to French">FR</button>
+          </div>
+        </div>
+      </div>
+      </div>
+    </nav>
+  </header>
+  <!-- ===== End Shared Header ===== -->
+
+  <!-- Main page content -->
+  <main id="main-content">
+
+    <!-- Page hero with hotel photo -->
+    <div class="page-hero" aria-hidden="true">
+      <div class="page-hero-bg" style="background-image: url('img/hotel_ (1).jpg');"></div>
+      <div class="page-hero-overlay"></div>
+      <div class="page-hero-content mx-auto px-4 max-w-7xl">
+        <h1 class="mb-0" data-i18n="voyages_title">رحلاتنا</h1>
+        <p class="mt-3 max-w-2xl text-white/90">استكشف باقات السفر المختارة بعناية مع أفضل الفنادق وبرامج مريحة تناسب
+          العائلات والأفراد.</p>
+      </div>
+    </div>
+
+    <div class="mx-auto px-4 max-w-7xl py-10">
+      <section class="luxury-panel p-4 sm:p-5 mb-8" aria-label="بحث سريع">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
+          <div>
+            <label for="voyage-filter-destination" class="text-sm font-medium text-text">الوجهة</label>
+            <input id="voyage-filter-destination" type="text" placeholder="مثال: إسطنبول"
+              class="w-full min-h-[44px] rounded-xl border border-border px-3 py-2">
+          </div>
+          <div>
+            <label for="voyage-filter-date" class="text-sm font-medium text-text">تاريخ السفر</label>
+            <input id="voyage-filter-date" type="date" class="w-full min-h-[44px] rounded-xl border border-border px-3 py-2">
+          </div>
+          <div>
+            <label for="voyage-filter-budget" class="text-sm font-medium text-text">الميزانية</label>
+            <select id="voyage-filter-budget" class="w-full min-h-[44px] rounded-xl border border-border px-3 py-2">
+              <option>كل الأسعار</option>
+              <option>أقل من 1500</option>
+              <option>1500 - 3000</option>
+              <option>3000+</option>
+            </select>
+          </div>
+          <a href="contact.html"
+            class="inline-flex w-full min-h-[44px] items-center justify-center rounded-xl bg-accent px-4 py-2 text-white font-semibold hover:bg-accent-dark transition-colors">احجز
+            استشارة</a>
+        </div>
+      </section>
+
+      <!-- Loading spinner -->
+      <div id="voyages-loading" class="text-center py-5" aria-live="polite" aria-label="جارٍ التحميل">
+        <div class="inline-block w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"
+          role="status" aria-label="loading">
+          <span class="sr-only" data-i18n="loading">جارٍ التحميل...</span>
+        </div>
+      </div>
+
+      <!-- Error alert (hidden by default) -->
+      <div id="voyages-error" class="p-4 rounded bg-red-50 border border-red-200 text-danger text-base hidden"
+        role="alert" data-i18n="err_firebase_unreachable">
+        تعذّر الاتصال بالخادم، يرجى المحاولة لاحقاً
+      </div>
+
+      <!-- Voyage cards container -->
+      <div id="voyages-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" aria-live="polite"></div>
+
+    </div>
+  </main>
+
+  <!-- ===== Shared Footer ===== -->
+  <footer class="site-footer mt-10">
+    <div class="mx-auto px-4 max-w-7xl">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
+        <!-- Brand column -->
+        <div class="footer-card p-4 md:p-5 text-center md:text-start transition-all duration-300 hover:-translate-y-1">
+          <img src="img/logo.png" alt="Dheyafa Tourism Logo" class="footer-logo">
+          <div class="footer-brand" data-i18n="footer_agency_full_name">ذيافة للسياحة – فرع منوبة وادي الليل</div>
+          <p class="footer-location mt-2">منوبة وادي الليل، تونس</p>
+        </div>
+        <!-- Contact column -->
+        <div class="footer-card p-4 md:p-5 transition-all duration-300 hover:-translate-y-1">
+          <h3 class="text-white font-semibold mb-3 text-sm md:text-base tracking-wide" data-i18n="footer_contact_us">تواصل معنا</h3>
+          <div class="footer-contact-item">
+            <span class="footer-icon">📞</span>
+            <a class="footer-link" href="tel:+21653244968" dir="ltr">+216 53 244 968</a>
+          </div>
+          <div class="footer-contact-item">
+            <span class="footer-icon">✉️</span>
+            <a class="footer-link" href="mailto:ltrabelsi26@gmail.com" dir="ltr">ltrabelsi26@gmail.com</a>
+          </div>
+        </div>
+        <!-- Social column -->
+        <div class="footer-card p-4 md:p-5 transition-all duration-300 hover:-translate-y-1">
+          <h3 class="text-white font-semibold mb-3 text-sm md:text-base tracking-wide" data-i18n="footer_follow_us">تابعنا</h3>
+          <div class="footer-contact-item">
+            <span class="footer-icon">📘</span>
+            <a class="footer-link" href="https://www.facebook.com/dheyafa.ouedellil" target="_blank" rel="noopener noreferrer"
+              data-i18n="footer_facebook_label">فيسبوك</a>
+          </div>
+        </div>
+      </div>
+      <hr class="footer-divider">
+      <p class="footer-copy" data-i18n="footer_copy">جميع الحقوق محفوظة</p>
+    </div>
+  </footer>
+  <!-- ===== End Shared Footer ===== -->
+
+  <!-- Firebase JS SDK v9 compat -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <!-- Shared JS modules -->
+  <script src="js/firebase-init.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/toast.js"></script>
+  <script src="js/navbar.js"></script>
+
+  <!-- Voyages listing: reads /voyages, filters by type=voyage & status=active,
+       sorts by departureDate ascending, and renders voyage cards.
+       Requirements: 2.1, 2.4, 2.5, 2.6 -->
+  <script>
+    (function () {
+      var loadingEl = document.getElementById("voyages-loading");
+      var errorEl = document.getElementById("voyages-error");
+      var containerEl = document.getElementById("voyages-container");
+
+      /**
+       * Builds the HTML for a single voyage card.
+       *
+       * @param {string} voyageId  - Firebase key for the voyage
+       * @param {Object} voyage    - Voyage data object from RTDB
+       * @param {number} index     - Card index (used to pick a cover photo)
+       * @returns {string} HTML string for the card column
+       */
+      var VOYAGE_PHOTOS = [
+        "img/hotel_ (1).jpg",
+        "img/hotel_ (2).jpg",
+        "img/hotel_ (3).jpg",
+        "img/hotel_ (4).jpg",
+        "img/hotel_ (5).jpg",
+        "img/hotel_ (6).jpg",
+        "img/hotel_ (7).jpg",
+        "img/hotel_ (8).jpg",
+        "img/hotel_ (9).jpg"
+      ];
+
+      function buildCard(voyageId, voyage, index) {
+        var photo = VOYAGE_PHOTOS[index % VOYAGE_PHOTOS.length];
+        var seatsHtml;
+        if (voyage.availableSeats > 0) {
+          seatsHtml =
+            '<span class="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 font-semibold text-emerald-700"><strong data-i18n="available_seats">' + t("available_seats") + '</strong>:&nbsp;' +
+            voyage.availableSeats + '</span>';
+        } else {
+          seatsHtml =
+            '<span class="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 font-semibold text-rose-700" data-i18n="fully_booked">' +
+            t("fully_booked") + '</span>';
+        }
+
+        return (
+          '<article class="group relative overflow-hidden rounded-3xl border border-white/70 bg-white/90 shadow-[0_10px_30px_-18px_rgba(26,172,226,0.4)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_42px_-18px_rgba(26,172,226,0.5)]">' +
+          '<div class="relative overflow-hidden">' +
+          '<img src="' + photo + '" class="h-44 w-full object-cover transition-transform duration-500 group-hover:scale-105"' +
+          ' alt="' + escapeHtml(voyage.destination) + '" loading="lazy">' +
+          '<div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent"></div>' +
+          '<div class="absolute start-3 top-3 inline-flex items-center rounded-full border border-white/40 bg-white/20 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-md">✈ <span class="ms-1" data-i18n="nav_voyages">' + t("nav_voyages") + '</span></div>' +
+          '<div class="absolute bottom-3 end-3 rounded-xl bg-white/90 px-2.5 py-1 text-xs font-bold text-primary-dark shadow-sm">' +
+          escapeHtml(String(voyage.price)) + ' <span data-i18n="price_unit">' + t("price_unit") + '</span>' +
+          '</div>' +
+          '</div>' +
+          '<div class="p-3.5 sm:p-4">' +
+          '<h2 class="text-base sm:text-lg font-bold text-primary-dark leading-tight min-h-[2.75rem]">' + escapeHtml(voyage.destination) + '</h2>' +
+          '<div class="mt-3 space-y-1.5 text-sm text-text-muted">' +
+          '<p class="flex items-center justify-between gap-2"><strong class="font-semibold text-text" data-i18n="form_departure_date">' + t("form_departure_date") + '</strong><span class="truncate">' + escapeHtml(formatDate(voyage.departureDate)) + '</span></p>' +
+          '<p class="flex items-center justify-between gap-2"><strong class="font-semibold text-text" data-i18n="form_return_date">' + t("form_return_date") + '</strong><span class="truncate">' + escapeHtml(formatDate(voyage.returnDate)) + '</span></p>' +
+          '</div>' +
+          '<div class="mt-3 flex items-center justify-between gap-2 border-t border-border/70 pt-3">' +
+          '<div class="text-xs sm:text-sm text-text-muted">' + seatsHtml + '</div>' +
+          '<a href="voyage-detail.html?id=' + encodeURIComponent(voyageId) + '"' +
+          ' class="inline-flex min-h-[40px] items-center justify-center rounded-xl bg-primary px-3.5 py-2 text-xs sm:text-sm font-semibold text-white shadow-[0_8px_18px_-10px_rgba(200,116,10,0.85)] transition-all duration-300 hover:bg-primary-dark hover:shadow-[0_10px_22px_-10px_rgba(173,101,8,0.9)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"' +
+          ' data-i18n="btn_view_details">' + t("btn_view_details") + '</a>' +
+          '</div>' +
+          '</div>' +
+          '</article>'
+        );
+      }
+
+      /**
+       * Minimal HTML escaping to prevent XSS when inserting user-supplied
+       * strings into innerHTML.
+       *
+       * @param {string} str - Raw string
+       * @returns {string} HTML-escaped string
+       */
+      function escapeHtml(str) {
+        if (str === null || str === undefined) return "";
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      // ── Fetch voyages from RTDB ──────────────────────────────────────────
+      db.ref("/voyages").once("value")
+        .then(function (snapshot) {
+          // Hide spinner
+          loadingEl.classList.add("hidden");
+
+          var voyages = [];
+
+          snapshot.forEach(function (child) {
+            var data = child.val();
+            // Filter: type === "voyage" AND status === "active"
+            if (data && data.type === "voyage" && data.status === "active") {
+              voyages.push({ id: child.key, data: data });
+            }
+          });
+
+          // Sort by departureDate ascending (ISO strings sort lexicographically)
+          voyages.sort(function (a, b) {
+            var da = a.data.departureDate || "";
+            var db_ = b.data.departureDate || "";
+            if (da < db_) return -1;
+            if (da > db_) return 1;
+            return 0;
+          });
+
+          if (voyages.length === 0) {
+            // Show "no voyages" message
+            containerEl.innerHTML =
+              '<div class="col-span-3">' +
+              '<p class="text-text-muted text-center" data-i18n="admin_no_voyages">' +
+              t("admin_no_voyages") +
+              '</p>' +
+              '</div>';
+            return;
+          }
+
+          // Render cards
+          var html = "";
+          for (var i = 0; i < voyages.length; i++) {
+            html += buildCard(voyages[i].id, voyages[i].data, i);
+          }
+          containerEl.innerHTML = html;
+        })
+        .catch(function (err) {
+          // Hide spinner, show error alert
+          loadingEl.classList.add("hidden");
+          errorEl.classList.remove("hidden");
+          console.error("Failed to load voyages:", err);
+        });
+    })();
+  </script>
+  <script>document.addEventListener('DOMContentLoaded', function () { initNavbar(); });</script>
+</body>
+
+</html>

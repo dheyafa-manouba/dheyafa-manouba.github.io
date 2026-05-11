@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<!-- 404 Fallback Page: GitHub Pages fallback — shows bilingual message and redirects to homepage -->
+<!-- Requirement 11.4 -->
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Immediate auto-redirect to homepage (Requirement 11.4) -->
+  <meta http-equiv="refresh" content="0;url=index.html" />
+  <title>404 – Page Not Found | ضيافة للسياحة</title>
+  <!-- Tailwind CSS v4 Play CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    @theme {
+      --color-primary: #1aace2;
+      --color-primary-dark: #0f86b2;
+      --color-primary-light: #ebf6f5;
+      --color-primary-mid: #5bbee1;
+      --color-accent: #fb9610;
+      --color-accent-dark: #c8740a;
+      --color-accent-light: #ebf6f5;
+      --color-success: #1f7a53;
+      --color-danger: #a53d38;
+      --color-warning: #8a6a1f;
+      --color-text: #163042;
+      --color-text-muted: #4d6776;
+      --color-border: #bfe3ef;
+      --color-bg-alt: #ebf6f5;
+      --color-bg-warm: #f5eec4;
+      --font-size-base: 1.125rem;
+      --font-size-sm: 1rem;
+      --font-size-lg: 1.25rem;
+      --border-radius: 0.5rem;
+      --border-radius-lg: 0.875rem;
+      --touch-target-min: 44px;
+    }
+  </style>
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="css/custom.css" />
+</head>
+
+<body>
+
+  <!-- Skip to main content (accessibility) -->
+  <a class="skip-link" href="#main-content">تخطى إلى المحتوى الرئيسي</a>
+
+  <!-- ===== Shared Header ===== -->
+  <header>
+    <nav class="site-navbar" role="navigation" aria-label="Main navigation">
+      <div class="mx-auto max-w-7xl px-3 sm:px-4">
+        <div class="nav-shell flex items-center justify-between gap-3 sm:gap-4">
+        <!-- Brand / Logo -->
+        <a class="nav-brand flex items-center gap-2.5 text-primary-dark min-h-[44px] no-underline"
+          href="index.html">
+          <img src="img/logo.png" alt="Dheyafa Tourism Logo" class="navbar-logo">
+          <span class="nav-brand-text" data-i18n="agency_name">ضيافة للسياحة</span>
+        </a>
+
+        <!-- Mobile toggle -->
+        <button
+          class="navbar-toggler sm:hidden min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl bg-transparent cursor-pointer"
+          type="button" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="hamburger" aria-hidden="true">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+          </span>
+        </button>
+
+        <!-- Nav links + language toggle -->
+        <div
+          class="nav-menu hidden sm:flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 absolute sm:static top-full left-0 right-0 z-50"
+          id="mainNav">
+          <ul class="navbar-nav flex flex-col sm:flex-row list-none m-0 p-0 gap-1 sm:gap-1.5">
+            <li>
+              <a class="nav-link block px-4 py-2 text-primary-dark font-medium rounded-full min-h-[44px] flex items-center"
+                href="index.html" data-i18n="nav_home">الرئيسية</a>
+            </li>
+            <li>
+              <a class="nav-link block px-4 py-2 text-primary-dark font-medium rounded-full min-h-[44px] flex items-center"
+                href="voyages.html" data-i18n="nav_voyages">الرحلات</a>
+            </li>
+            <li>
+              <a class="nav-link block px-4 py-2 text-primary-dark font-medium rounded-full min-h-[44px] flex items-center"
+                href="omra.html" data-i18n="nav_omra">عمرة</a>
+            </li>
+            <li>
+              <a class="nav-link nav-cta block px-4 py-2 text-primary-dark font-medium rounded-full min-h-[44px] flex items-center"
+                href="contact.html" data-i18n="nav_contact">اتصل بنا</a>
+            </li>
+          </ul>
+          <!-- Language toggle -->
+          <div class="nav-lang-switch flex gap-2 items-center mt-1 sm:mt-0 ms-auto">
+            <button
+              class="lang-btn min-h-[44px] min-w-[44px] px-3 text-sm font-bold"
+              onclick="setLanguage('ar')" aria-label="Switch to Arabic">AR</button>
+            <button
+              class="lang-btn min-h-[44px] min-w-[44px] px-3 text-sm font-bold"
+              onclick="setLanguage('fr')" aria-label="Switch to French">FR</button>
+          </div>
+        </div>
+      </div>
+      </div>
+    </nav>
+  </header>
+  <!-- ===== End Shared Header ===== -->
+
+  <!-- Main content -->
+  <main id="main-content">
+    <div class="mx-auto px-4 max-w-7xl py-10">
+      <div class="flex justify-center">
+        <div class="w-full max-w-xl text-center">
+
+          <!-- 404 error code -->
+          <p class="text-8xl font-bold text-primary mb-0" aria-hidden="true">404</p>
+
+          <!-- Arabic message -->
+          <h1 class="text-2xl font-bold mt-2 mb-1">الصفحة غير موجودة</h1>
+          <p class="text-lg mb-3">سيتم تحويلك إلى الصفحة الرئيسية تلقائياً</p>
+
+          <!-- French message -->
+          <h2 class="text-xl text-text-muted mb-1">Page introuvable</h2>
+          <p class="text-text-muted mb-4">Vous serez redirigé automatiquement vers la page d'accueil</p>
+
+          <!-- Manual fallback link -->
+          <a href="index.html"
+            class="inline-flex items-center justify-center min-h-[44px] px-6 py-2 bg-primary text-white font-semibold rounded hover:bg-primary-dark transition-colors text-lg"
+            data-i18n="go_home" aria-label="العودة إلى الرئيسية / Retour à l'accueil">
+            العودة إلى الرئيسية / Retour à l'accueil
+          </a>
+
+        </div>
+      </div>
+    </div>
+  </main>
+  <!-- ===== End Main content ===== -->
+
+  <!-- ===== Shared Footer ===== -->
+  <footer class="site-footer mt-10">
+    <div class="mx-auto px-4 max-w-7xl">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
+        <!-- Brand column -->
+        <div class="footer-card p-4 md:p-5 text-center md:text-start transition-all duration-300 hover:-translate-y-1">
+          <img src="img/logo.png" alt="Dheyafa Tourism Logo" class="footer-logo">
+          <div class="footer-brand" data-i18n="footer_agency_full_name">ذيافة للسياحة – فرع منوبة وادي الليل</div>
+          <p class="footer-location mt-2">منوبة وادي الليل، تونس</p>
+        </div>
+        <!-- Contact column -->
+        <div class="footer-card p-4 md:p-5 transition-all duration-300 hover:-translate-y-1">
+          <h3 class="text-white font-semibold mb-3 text-sm md:text-base tracking-wide" data-i18n="footer_contact_us">تواصل معنا</h3>
+          <div class="footer-contact-item">
+            <span class="footer-icon">📞</span>
+            <a class="footer-link" href="tel:+21653244968" dir="ltr">+216 53 244 968</a>
+          </div>
+          <div class="footer-contact-item">
+            <span class="footer-icon">✉️</span>
+            <a class="footer-link" href="mailto:ltrabelsi26@gmail.com" dir="ltr">ltrabelsi26@gmail.com</a>
+          </div>
+        </div>
+        <!-- Social column -->
+        <div class="footer-card p-4 md:p-5 transition-all duration-300 hover:-translate-y-1">
+          <h3 class="text-white font-semibold mb-3 text-sm md:text-base tracking-wide" data-i18n="footer_follow_us">تابعنا</h3>
+          <div class="footer-contact-item">
+            <span class="footer-icon">📘</span>
+            <a class="footer-link" href="https://www.facebook.com/dheyafa.ouedellil" target="_blank" rel="noopener noreferrer"
+              data-i18n="footer_facebook_label">فيسبوك</a>
+          </div>
+        </div>
+      </div>
+      <hr class="footer-divider">
+      <p class="footer-copy" data-i18n="footer_copy">جميع الحقوق محفوظة</p>
+    </div>
+  </footer>
+  <!-- ===== End Shared Footer ===== -->
+
+  <!-- Firebase JS SDK v9 compat -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <!-- Shared JS modules -->
+  <script src="js/firebase-init.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/navbar.js"></script>
+  <script>document.addEventListener('DOMContentLoaded', function () { initNavbar(); });</script>
+</body>
+
+</html>

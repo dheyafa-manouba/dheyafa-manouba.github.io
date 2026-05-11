@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<!-- Admin Questions Management: view questions grouped by voyage, mark as read -->
+<!-- Requirements: 8.1, 8.2, 8.3, 8.4 -->
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>إدارة الأسئلة – لوحة الإدارة</title>
+  <!-- Tailwind CSS v4 Play CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    @theme {
+      --color-primary: #1aace2;
+      --color-primary-dark: #0f86b2;
+      --color-primary-light: #ebf6f5;
+      --color-primary-mid: #5bbee1;
+      --color-accent: #fb9610;
+      --color-accent-dark: #c8740a;
+      --color-accent-light: #ebf6f5;
+      --color-success: #1f7a53;
+      --color-danger: #a53d38;
+      --color-warning: #8a6a1f;
+      --color-text: #163042;
+      --color-text-muted: #4d6776;
+      --color-border: #bfe3ef;
+      --color-bg-alt: #ebf6f5;
+      --color-bg-warm: #f5eec4;
+      --font-size-base: 1.125rem;
+      --font-size-sm: 1rem;
+      --font-size-lg: 1.25rem;
+      --border-radius: 0.5rem;
+      --border-radius-lg: 0.875rem;
+      --touch-target-min: 44px;
+    }
+  </style>
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="../css/custom.css" />
+</head>
+<!-- Body hidden by default; revealed after auth check passes (Requirement 5.6) -->
+
+<body style="display:none" class="admin-shell">
+
+  <!-- Admin navbar -->
+  <nav class="admin-navbar bg-white/95 border-b border-primary-light shadow-sm" role="navigation">
+    <div class="mx-auto px-4 flex items-center justify-between min-h-[44px] max-w-7xl">
+      <a class="flex items-center gap-2 font-bold text-primary-dark text-lg min-h-[44px] no-underline"
+        href="index.html">
+        <img src="../img/logo.png" alt="Dheyafa Tourism Logo" class="navbar-logo">
+        <span data-i18n="admin_dashboard">لوحة التحكم</span>
+      </a>
+      <div class="admin-lang-switch flex items-center gap-2">
+        <button
+          class="lang-btn admin-lang-btn min-h-[44px] min-w-[44px] bg-primary-light border border-primary text-primary-dark font-bold text-sm rounded px-3 hover:bg-primary hover:text-white transition-colors"
+          onclick="setLanguage('ar')">AR</button>
+        <button
+          class="lang-btn admin-lang-btn min-h-[44px] min-w-[44px] bg-primary-light border border-primary text-primary-dark font-bold text-sm rounded px-3 hover:bg-primary hover:text-white transition-colors"
+          onclick="setLanguage('fr')">FR</button>
+        <button
+          class="min-h-[44px] px-4 py-2 bg-danger text-white font-semibold text-sm rounded hover:bg-red-700 transition-colors"
+          id="logout-btn" data-i18n="admin_logout">تسجيل الخروج</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="mx-auto px-4 max-w-7xl py-8">
+    <div class="admin-header flex justify-between items-center mb-4">
+      <h1 class="admin-page-title text-2xl font-bold mb-0" data-i18n="admin_questions">الأسئلة</h1>
+      <!-- Unread count badge (Requirement 8.3) -->
+      <span id="unread-count-badge" class="inline-block px-3 py-1 text-base font-semibold rounded bg-danger text-white"
+        style="display:none"></span>
+    </div>
+
+    <!-- Loading spinner -->
+    <div id="questions-loading" class="text-center py-5">
+      <div class="inline-block w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"
+        role="status" aria-label="loading">
+        <span class="sr-only" data-i18n="loading">جارٍ التحميل...</span>
+      </div>
+    </div>
+
+    <!-- No questions message -->
+    <div id="no-questions-msg" class="hidden text-text-muted text-center py-5" data-i18n="admin_no_questions">
+      لا توجد أسئلة
+    </div>
+
+    <!-- Accordion container for question groups (Requirements 8.1, 8.2) -->
+    <div id="questions-accordion" class="hidden admin-panel p-4"></div>
+  </main>
+
+  <!-- Firebase JS SDK v9 compat -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <!-- Shared JS modules — firebase-init and auth-guard MUST be first -->
+  <script src="../js/firebase-init.js"></script>
+  <script src="../js/auth-guard.js"></script>
+  <script src="../js/i18n.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/toast.js"></script>
+
+  <script>
+    // ── State ────────────────────────────────────────────────────────────────
+    /** All voyages loaded from RTDB, keyed by Firebase push ID */
+    var allVoyages = {};
+
+    /**
+     * Global unread count — tracks how many questions have isRead === false.
+     * Updated by loadQuestions() and decremented by markGroupAsRead().
+     * Requirement 8.3
+     */
+    var globalUnreadCount = 0;
+
+    // ── Logout ───────────────────────────────────────────────────────────────
+    document.getElementById("logout-btn").addEventListener("click", function () {
+      firebase.auth().signOut().then(function () {
+        window.location.href = "login.html";
+      });
+    });
+
+    // ── groupByVoyage ────────────────────────────────────────────────────────
+    /**
+     * Groups a flat object of questions (keyed by Firebase push ID) by voyageId.
+     *
+     * Questions with a non-null, non-undefined, non-empty voyageId are placed
+     * into the group keyed by that voyageId. Questions with null, undefined, or
+     * empty-string voyageId are placed into the "general" group.
+     *
+     * @param {Object} questionsObj - Plain object of questions keyed by push ID,
+     *   each value having at least { voyageId, senderName, phone, message,
+     *   createdAt, isRead }.
+     * @returns {Object} Groups object where each key is a voyageId (or "general")
+     *   and each value is an array of question objects (each with an added `id`
+     *   property equal to the Firebase push key).
+     *
+     * Requirements: 8.1
+     */
+    function groupByVoyage(questionsObj) {
+      var groups = {};
+
+      Object.keys(questionsObj).forEach(function (id) {
+        var question = Object.assign({ id: id }, questionsObj[id]);
+        var key = (question.voyageId != null && question.voyageId !== "")
+          ? question.voyageId
+          : "general";
+
+        if (!groups[key]) {
+          groups[key] = [];
+        }
+        groups[key].push(question);
+      });
+
+      return groups;
+    }
+
+    // ── escapeHtml ───────────────────────────────────────────────────────────
+    /**
+     * Escapes HTML special characters to prevent XSS when inserting user
+     * content into innerHTML.
+     *
+     * @param {string} str - Raw string to escape
+     * @returns {string} HTML-safe string
+     */
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    // ── Update global unread badge ────────────────────────────────────────────
+    /**
+     * Updates the top-of-page unread count badge.
+     * Hides the badge when count reaches 0.
+     *
+     * Requirement 8.3
+     */
+    function updateGlobalUnreadBadge() {
+      var badge = document.getElementById("unread-count-badge");
+      if (globalUnreadCount > 0) {
+        badge.textContent = globalUnreadCount;
+        badge.style.display = "";
+      } else {
+        badge.style.display = "none";
+      }
+    }
+
+    // ── Mark group as read ───────────────────────────────────────────────────
+    /**
+     * Marks all unread questions in a group as read in RTDB and updates the DOM.
+     *
+     * Called when the admin opens (expands) an accordion group via the
+     * show.bs.collapse event. For each unread question in the group:
+     *   1. Sets /questions/{id}/isRead to true in RTDB
+     *   2. Removes the unread indicator from the question card in the DOM
+     *   3. Decrements globalUnreadCount and updates the global badge
+     *   4. Updates the group's unread badge in the accordion header
+     *
+     * Requirement 8.4
+     *
+     * @param {string} groupKey - The voyageId or "general"
+     */
+    function markGroupAsRead(groupKey) {
+      var collapseEl = document.getElementById("accordion-group-" + groupKey);
+      if (!collapseEl) return;
+
+      // Find all unread question cards in this group
+      var unreadCards = collapseEl.querySelectorAll("[data-unread='true']");
+      if (unreadCards.length === 0) return;
+
+      var groupUnreadDelta = 0;
+
+      unreadCards.forEach(function (card) {
+        var questionId = card.getAttribute("data-question-id");
+        if (!questionId) return;
+
+        // Write isRead = true to RTDB (Requirement 8.4)
+        db.ref("questions/" + questionId + "/isRead").set(true)
+          .catch(function (err) {
+            console.error("Error marking question as read:", err);
+          });
+
+        // Update DOM: remove unread indicators from this card
+        card.setAttribute("data-unread", "false");
+        card.classList.remove("border-primary");
+
+        var nameEl = card.querySelector(".question-sender-name");
+        if (nameEl) nameEl.classList.remove("font-bold");
+
+        var unreadBadge = card.querySelector(".badge-unread");
+        if (unreadBadge) unreadBadge.remove();
+
+        groupUnreadDelta++;
+      });
+
+      // Decrement global unread count and update badge
+      globalUnreadCount = Math.max(0, globalUnreadCount - groupUnreadDelta);
+      updateGlobalUnreadBadge();
+
+      // Update the group's unread badge in the accordion header
+      var headerBadge = document.getElementById("unread-badge-group-" + groupKey);
+      if (headerBadge) {
+        headerBadge.remove();
+      }
+    }
+
+    // ── loadQuestions ────────────────────────────────────────────────────────
+    /**
+     * Fetches /questions and /voyages from RTDB in parallel, groups questions
+     * by voyageId using groupByVoyage(), and renders the accordion.
+     *
+     * Also counts total unread questions and updates #unread-count-badge.
+     * Hides the spinner and shows the accordion (or no-questions message).
+     *
+     * Requirements: 8.1, 8.2, 8.3
+     */
+    function loadQuestions() {
+      var loadingEl = document.getElementById("questions-loading");
+      var accordionEl = document.getElementById("questions-accordion");
+      var noQuestionsEl = document.getElementById("no-questions-msg");
+
+      // Show spinner, hide accordion and empty message
+      loadingEl.classList.remove("hidden");
+      accordionEl.classList.add("hidden");
+      accordionEl.innerHTML = "";
+      noQuestionsEl.classList.add("hidden");
+
+      // Fetch voyages and questions in parallel (Requirement 8.1)
+      Promise.all([
+        db.ref("voyages").once("value"),
+        db.ref("questions").once("value")
+      ]).then(function (results) {
+        var voyagesSnap = results[0];
+        var questionsSnap = results[1];
+
+        // Store voyages keyed by ID
+        allVoyages = {};
+        voyagesSnap.forEach(function (child) {
+          allVoyages[child.key] = child.val();
+        });
+
+        var questionsObj = questionsSnap.val() || {};
+
+        // Hide spinner
+        loadingEl.classList.add("hidden");
+
+        if (Object.keys(questionsObj).length === 0) {
+          noQuestionsEl.classList.remove("hidden");
+          globalUnreadCount = 0;
+          updateGlobalUnreadBadge();
+          return;
+        }
+
+        // Count total unread (Requirement 8.3)
+        globalUnreadCount = 0;
+        Object.keys(questionsObj).forEach(function (id) {
+          if (questionsObj[id].isRead === false) {
+            globalUnreadCount++;
+          }
+        });
+        updateGlobalUnreadBadge();
+
+        // Group by voyage and render accordion (Requirements 8.1, 8.2)
+        var groups = groupByVoyage(questionsObj);
+        renderAccordion(groups);
+
+      }).catch(function (err) {
+        console.error("Error loading questions:", err);
+        loadingEl.classList.add("hidden");
+        showToast(t("err_firebase_unreachable"), "danger");
+      });
+    }
+
+    // ── renderAccordion ──────────────────────────────────────────────────────
+    /**
+     * Renders the accordion with one section per voyage group.
+     * The "general" group is always rendered last.
+     *
+     * Each accordion item:
+     *   - ID: accordion-group-{voyageId} (or accordion-group-general)
+     *   - Header: voyage destination (from voyages data) or t("admin_general_questions")
+     *   - Unread count badge in header if group has unread questions
+     *   - Question cards showing: sender name, phone, message, voyage name, createdAt
+     *   - Unread questions have font-bold class and a "NEW" badge
+     *
+     * Attaches show.bs.collapse listener to each collapse element for
+     * mark-as-read behaviour (Task 18.3).
+     *
+     * Requirements: 8.1, 8.2
+     *
+     * @param {Object} groups - Output of groupByVoyage()
+     */
+    function renderAccordion(groups) {
+      var accordionEl = document.getElementById("questions-accordion");
+      var lang = localStorage.getItem("lang") || "ar";
+
+      // Separate voyage groups from the general group
+      var voyageKeys = Object.keys(groups).filter(function (k) { return k !== "general"; });
+      var hasGeneral = !!groups["general"];
+
+      // Sort voyage groups by destination name for consistency
+      voyageKeys.sort(function (a, b) {
+        var nameA = (allVoyages[a] && allVoyages[a].destination) ? allVoyages[a].destination : a;
+        var nameB = (allVoyages[b] && allVoyages[b].destination) ? allVoyages[b].destination : b;
+        return nameA.localeCompare(nameB);
+      });
+
+      // Voyage groups first, then general group last
+      var orderedKeys = voyageKeys.concat(hasGeneral ? ["general"] : []);
+
+      if (orderedKeys.length === 0) {
+        document.getElementById("no-questions-msg").classList.remove("hidden");
+        return;
+      }
+
+      orderedKeys.forEach(function (groupKey, index) {
+        var questions = groups[groupKey];
+        var unreadInGroup = questions.filter(function (q) { return q.isRead === false; }).length;
+
+        // Determine group header label
+        var groupLabel;
+        if (groupKey === "general") {
+          groupLabel = t("admin_general_questions");
+        } else {
+          var voyage = allVoyages[groupKey];
+          if (voyage) {
+            groupLabel = (voyage.destination || groupKey)
+              + (voyage.departureDate ? " – " + voyage.departureDate : "");
+          } else {
+            groupLabel = groupKey;
+          }
+        }
+
+        // Accordion collapse element ID (Task 18.1 spec)
+        var collapseId = "accordion-group-" + groupKey;
+
+        // Unread badge in header (hidden by ID so markGroupAsRead can remove it)
+        var unreadHeaderBadge = unreadInGroup > 0
+          ? '<span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-danger text-white ms-2" id="unread-badge-group-' + groupKey + '">'
+          + unreadInGroup
+          + '</span>'
+          : "";
+
+        // Question count badge
+        var countBadge = '<span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-gray-500 text-white ms-2">'
+          + questions.length
+          + '</span>';
+
+        // Build question cards (Requirement 8.2)
+        var cardsHtml = "";
+        questions.forEach(function (q) {
+          var isUnread = q.isRead === false;
+
+          // Voyage name for this question (Requirement 8.2)
+          var voyageName = "";
+          if (q.voyageId && allVoyages[q.voyageId]) {
+            voyageName = allVoyages[q.voyageId].destination || q.voyageId;
+          }
+
+          // Formatted timestamp (Requirement 8.2)
+          // createdAt is a Unix timestamp in ms — use toLocaleString() directly
+          var dateStr = q.createdAt ? new Date(q.createdAt).toLocaleString() : "–";
+
+          // Unread badge on card
+          var unreadCardBadge = isUnread
+            ? '<span class="inline-block px-2 py-0.5 text-xs font-semibold rounded bg-primary text-white ms-2 badge-unread" data-i18n="admin_unread_badge">'
+            + t("admin_unread_badge")
+            + '</span>'
+            : "";
+
+          cardsHtml += '<div class="bg-white border rounded-lg mb-2 p-4'
+            + (isUnread ? " border-primary" : " border-border")
+            + '" data-question-id="' + q.id + '"'
+            + ' data-unread="' + (isUnread ? "true" : "false") + '"'
+            + ' id="question-card-' + q.id + '">'
+            + '<div class="flex justify-between items-start">'
+            + '<span class="question-sender-name' + (isUnread ? " font-bold" : "") + '">'
+            + '<span data-i18n="admin_question_from">' + t("admin_question_from") + '</span>: '
+            + escapeHtml(q.senderName || "–")
+            + unreadCardBadge
+            + '</span>'
+            + '<small class="text-text-muted">' + escapeHtml(dateStr) + '</small>'
+            + '</div>'
+            + '<div class="mt-1">'
+            + '<span data-i18n="admin_question_phone">' + t("admin_question_phone") + '</span>: '
+            + '<strong>' + escapeHtml(q.phone || "–") + '</strong>'
+            + '</div>'
+            + (voyageName
+              ? '<div class="mt-1">'
+              + '<span data-i18n="admin_question_voyage">' + t("admin_question_voyage") + '</span>: '
+              + '<em>' + escapeHtml(voyageName) + '</em>'
+              + '</div>'
+              : "")
+            + '<div class="mt-2 border-t border-border pt-2">'
+            + '<span data-i18n="admin_question_message">' + t("admin_question_message") + '</span>:<br>'
+            + '<span>' + escapeHtml(q.message || "") + '</span>'
+            + '</div>'
+            + '</div>';
+        });
+
+        // Build accordion item (vanilla JS accordion)
+        var isFirst = index === 0;
+        var itemHtml = '<div class="border border-border rounded-lg mb-2">'
+          + '<h2>'
+          + '<button class="accordion-button w-full flex items-center justify-between p-4 font-semibold text-start bg-primary-light text-primary-dark rounded-t-lg"'
+          + ' type="button"'
+          + ' aria-expanded="' + (isFirst ? "true" : "false") + '"'
+          + ' aria-controls="' + collapseId + '">'
+          + '<span>' + escapeHtml(groupLabel) + unreadHeaderBadge + countBadge + '</span>'
+          + '<svg class="w-4 h-4 transition-transform' + (isFirst ? ' rotate-180' : '') + '" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>'
+          + '</button>'
+          + '</h2>'
+          + '<div id="' + collapseId + '"'
+          + ' class="accordion-collapse' + (isFirst ? '' : ' hidden') + '">'
+          + '<div class="p-4">'
+          + cardsHtml
+          + '</div>'
+          + '</div>'
+          + '</div>';
+
+        accordionEl.insertAdjacentHTML("beforeend", itemHtml);
+
+        // ── Vanilla JS accordion click handler + mark-as-read ──────────────
+        var collapseEl = document.getElementById(collapseId);
+        var headerBtn = collapseEl ? collapseEl.previousElementSibling.querySelector('button') : null;
+        if (collapseEl && headerBtn) {
+          headerBtn.addEventListener('click', function () {
+            var isOpen = !collapseEl.classList.contains('hidden');
+            // Collapse all panels
+            accordionEl.querySelectorAll('.accordion-collapse').forEach(function (panel) {
+              panel.classList.add('hidden');
+              var btn = panel.previousElementSibling.querySelector('button');
+              if (btn) {
+                btn.setAttribute('aria-expanded', 'false');
+                var icon = btn.querySelector('svg');
+                if (icon) icon.classList.remove('rotate-180');
+              }
+            });
+            // If this panel was closed, open it
+            if (!isOpen) {
+              collapseEl.classList.remove('hidden');
+              headerBtn.setAttribute('aria-expanded', 'true');
+              var icon = headerBtn.querySelector('svg');
+              if (icon) icon.classList.add('rotate-180');
+              // Fire show.bs.collapse event for mark-as-read compatibility
+              collapseEl.dispatchEvent(new CustomEvent('show.bs.collapse', { bubbles: true }));
+            }
+          });
+
+          // Attach show.bs.collapse listener for mark-as-read
+          collapseEl.addEventListener('show.bs.collapse', function () {
+            markGroupAsRead(groupKey);
+          });
+
+          // If the first group is already open on load, mark it as read now
+          if (isFirst) {
+            markGroupAsRead(groupKey);
+          }
+        }
+      });
+
+      // Show accordion, hide spinner
+      accordionEl.classList.remove("hidden");
+    }
+
+    // ── Initial load ─────────────────────────────────────────────────────────
+    document.addEventListener("DOMContentLoaded", function () {
+      loadQuestions();
+    });
+  </script>
+</body>
+
+</html>

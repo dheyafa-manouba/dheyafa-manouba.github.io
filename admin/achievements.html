@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<!-- Admin Achievements Management: CRUD for agency achievements displayed on homepage -->
+<!-- Requirements: 9.1, 9.2, 9.3 -->
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>إدارة الإنجازات – لوحة الإدارة</title>
+  <!-- Tailwind CSS v4 Play CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    @theme {
+      --color-primary: #1aace2;
+      --color-primary-dark: #0f86b2;
+      --color-primary-light: #ebf6f5;
+      --color-primary-mid: #5bbee1;
+      --color-accent: #fb9610;
+      --color-accent-dark: #c8740a;
+      --color-accent-light: #ebf6f5;
+      --color-success: #1f7a53;
+      --color-danger: #a53d38;
+      --color-warning: #8a6a1f;
+      --color-text: #163042;
+      --color-text-muted: #4d6776;
+      --color-border: #bfe3ef;
+      --color-bg-alt: #ebf6f5;
+      --color-bg-warm: #f5eec4;
+      --font-size-base: 1.125rem;
+      --font-size-sm: 1rem;
+      --font-size-lg: 1.25rem;
+      --border-radius: 0.5rem;
+      --border-radius-lg: 0.875rem;
+      --touch-target-min: 44px;
+    }
+  </style>
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="../css/custom.css" />
+</head>
+<!-- Body hidden by default; revealed after auth check passes (Requirement 5.6) -->
+
+<body style="display:none" class="admin-shell">
+
+  <!-- Admin navbar -->
+  <nav class="admin-navbar bg-white/95 border-b border-primary-light shadow-sm" role="navigation">
+    <div class="mx-auto px-4 flex items-center justify-between min-h-[44px] max-w-7xl">
+      <a class="flex items-center gap-2 font-bold text-primary-dark text-lg min-h-[44px] no-underline"
+        href="index.html">
+        <img src="../img/logo.png" alt="Dheyafa Tourism Logo" class="navbar-logo">
+        <span data-i18n="admin_dashboard">لوحة التحكم</span>
+      </a>
+      <div class="admin-lang-switch flex items-center gap-2">
+        <button
+          class="lang-btn admin-lang-btn min-h-[44px] min-w-[44px] bg-primary-light border border-primary text-primary-dark font-bold text-sm rounded px-3 hover:bg-primary hover:text-white transition-colors"
+          onclick="setLanguage('ar')">AR</button>
+        <button
+          class="lang-btn admin-lang-btn min-h-[44px] min-w-[44px] bg-primary-light border border-primary text-primary-dark font-bold text-sm rounded px-3 hover:bg-primary hover:text-white transition-colors"
+          onclick="setLanguage('fr')">FR</button>
+        <button
+          class="min-h-[44px] px-4 py-2 bg-danger text-white font-semibold text-sm rounded hover:bg-red-700 transition-colors"
+          id="logout-btn" data-i18n="admin_logout">تسجيل الخروج</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="mx-auto px-4 max-w-7xl py-8">
+    <div class="admin-header flex justify-between items-center mb-4">
+      <h1 class="admin-page-title text-2xl font-bold" data-i18n="admin_achievements">الإنجازات</h1>
+      <button
+        class="inline-flex items-center justify-center min-h-[44px] px-4 py-2 bg-primary text-white font-semibold rounded hover:bg-primary-dark transition-colors"
+        id="add-achievement-btn" data-i18n="btn_add_achievement">إضافة إنجاز</button>
+    </div>
+
+    <!-- Loading spinner -->
+    <div id="achievements-loading" class="text-center py-4">
+      <div class="inline-block w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"
+        role="status" aria-label="loading">
+        <span class="sr-only" data-i18n="loading">جارٍ التحميل...</span>
+      </div>
+    </div>
+
+    <!-- Achievements table -->
+    <div class="admin-table-wrap overflow-x-auto hidden" id="achievements-table-wrapper">
+      <table class="admin-data-table density-comfortable w-full text-base text-text" id="achievements-table">
+        <thead class="bg-primary-mid text-primary-dark font-bold text-sm">
+          <tr class="border-b border-border">
+            <th class="py-2 px-3 text-start" data-i18n="form_title">العنوان</th>
+            <th class="py-2 px-3 text-start" data-i18n="form_description">الوصف</th>
+            <th class="py-2 px-3 text-start" data-i18n="form_date">التاريخ</th>
+            <th class="py-2 px-3 text-start" data-i18n="form_image_url">الصورة</th>
+            <th class="py-2 px-3 text-start" data-i18n="col_actions">الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="achievements-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- No achievements message -->
+    <div id="no-achievements-msg" class="hidden text-text-muted text-center py-4" data-i18n="admin_no_achievements">
+      لا توجد إنجازات
+    </div>
+  </main>
+
+  <!-- Create/Edit Modal -->
+  <div class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50" id="achievement-modal"
+    role="dialog" aria-modal="true" aria-labelledby="achievement-modal-title" aria-hidden="true" tabindex="-1">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto admin-modal-surface">
+      <div class="flex items-center justify-between p-4 border-b border-border">
+        <h2 class="text-lg font-semibold text-primary-dark" id="achievement-modal-title"
+          data-i18n="btn_add_achievement">إضافة إنجاز</h2>
+        <button type="button"
+          class="modal-close-btn min-h-[44px] min-w-[44px] flex items-center justify-center text-text-muted hover:text-text rounded transition-colors"
+          aria-label="Close">✕</button>
+      </div>
+      <div class="p-4">
+        <form id="achievement-form" novalidate>
+          <input type="hidden" id="achievement-id">
+          <div class="mb-4">
+            <label for="a-title" class="block text-sm font-medium text-text mb-1" data-i18n="form_title">العنوان</label>
+            <input type="text"
+              class="w-full border border-border rounded px-3 py-2 text-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 min-h-[44px]"
+              id="a-title" data-i18n-placeholder="ph_title" placeholder="عنوان الإنجاز">
+            <div class="text-danger text-sm mt-1" id="err-a-title"></div>
+          </div>
+          <div class="mb-4">
+            <label for="a-description" class="block text-sm font-medium text-text mb-1"
+              data-i18n="form_description">الوصف</label>
+            <textarea
+              class="w-full border border-border rounded px-3 py-2 text-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+              id="a-description" rows="3" data-i18n-placeholder="ph_description" placeholder="وصف مختصر"></textarea>
+            <div class="text-danger text-sm mt-1" id="err-a-description"></div>
+          </div>
+          <div class="mb-4">
+            <label for="a-date" class="block text-sm font-medium text-text mb-1" data-i18n="form_date">التاريخ</label>
+            <input type="date"
+              class="w-full border border-border rounded px-3 py-2 text-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 min-h-[44px]"
+              id="a-date">
+            <div class="text-danger text-sm mt-1" id="err-a-date"></div>
+          </div>
+          <div class="mb-4">
+            <label for="a-image-url" class="block text-sm font-medium text-text mb-1" data-i18n="form_image_url">رابط
+              الصورة</label>
+            <input type="url"
+              class="w-full border border-border rounded px-3 py-2 text-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 min-h-[44px]"
+              id="a-image-url" data-i18n-placeholder="ph_image_url" placeholder="https://...">
+          </div>
+        </form>
+      </div>
+      <div class="flex justify-end gap-2 p-4 border-t border-border">
+        <button type="button"
+          class="modal-close-btn inline-flex items-center justify-center min-h-[44px] px-4 py-2 border border-border text-text font-semibold rounded hover:bg-bg-alt transition-colors"
+          data-i18n="btn_cancel">إلغاء</button>
+        <button type="button"
+          class="inline-flex items-center justify-center min-h-[44px] px-4 py-2 bg-primary text-white font-semibold rounded hover:bg-primary-dark transition-colors"
+          id="save-achievement-btn" data-i18n="btn_save">حفظ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase JS SDK v9 compat -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <!-- Shared JS modules — firebase-init and auth-guard MUST be first -->
+  <script src="../js/firebase-init.js"></script>
+  <script src="../js/auth-guard.js"></script>
+  <script src="../js/i18n.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/toast.js"></script>
+  <script src="../js/modal.js"></script>
+
+  <script>
+    // ── Logout ───────────────────────────────────────────────────────────────
+    document.getElementById("logout-btn").addEventListener("click", function () {
+      firebase.auth().signOut().then(function () {
+        window.location.href = "login.html";
+      });
+    });
+
+    // ── Modal instance ───────────────────────────────────────────────────────
+    var achievementModalEl = document.getElementById("achievement-modal");
+    var achievementModal = new VanillaModal(achievementModalEl);
+
+    // ── escapeHtml ───────────────────────────────────────────────────────────
+    /**
+     * Escapes HTML special characters to prevent XSS when inserting user
+     * content into innerHTML.
+     *
+     * @param {string} str - Raw string to escape
+     * @returns {string} HTML-safe string
+     */
+    function escapeHtml(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    // ── Clear inline validation errors ───────────────────────────────────────
+    /**
+     * Removes all is-invalid classes and clears error text from the achievement form.
+     */
+    function clearFormErrors() {
+      ["a-title", "a-description", "a-date"].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.classList.remove("is-invalid");
+      });
+      ["err-a-title", "err-a-description", "err-a-date"].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.textContent = "";
+      });
+    }
+
+    // ── Clear form fields ────────────────────────────────────────────────────
+    /**
+     * Resets all achievement form fields to empty values.
+     */
+    function clearForm() {
+      document.getElementById("achievement-id").value = "";
+      document.getElementById("a-title").value = "";
+      document.getElementById("a-description").value = "";
+      document.getElementById("a-date").value = "";
+      document.getElementById("a-image-url").value = "";
+      clearFormErrors();
+    }
+
+    // ── Populate form for editing ────────────────────────────────────────────
+    /**
+     * Fills the achievement form with data from an existing achievement record.
+     *
+     * @param {string} id          - Firebase key of the achievement
+     * @param {Object} achievement - Achievement data object from RTDB
+     */
+    function populateForm(id, achievement) {
+      document.getElementById("achievement-id").value = id;
+      document.getElementById("a-title").value = achievement.title || "";
+      document.getElementById("a-description").value = achievement.description || "";
+      document.getElementById("a-date").value = achievement.date || "";
+      document.getElementById("a-image-url").value = achievement.imageUrl || "";
+      clearFormErrors();
+    }
+
+    // ── loadAchievements ─────────────────────────────────────────────────────
+    /**
+     * Fetches all achievements from /achievements in RTDB and renders the table.
+     * Task 19.1: Reads all achievements and renders management table with
+     * Edit and Delete buttons.
+     *
+     * Requirements: 9.1, 9.2, 9.3
+     */
+    function loadAchievements() {
+      // Show spinner, hide table and empty message
+      document.getElementById("achievements-loading").classList.remove("hidden");
+      document.getElementById("achievements-table-wrapper").classList.add("hidden");
+      document.getElementById("no-achievements-msg").classList.add("hidden");
+
+      db.ref("achievements").once("value").then(function (snap) {
+        var tbody = document.getElementById("achievements-tbody");
+        tbody.innerHTML = "";
+
+        var hasRows = false;
+
+        snap.forEach(function (child) {
+          var id = child.key;
+          var a = child.val();
+          if (!a) return;
+
+          hasRows = true;
+
+          // Truncate description to 80 characters
+          var desc = a.description || "";
+          var descDisplay = desc.length > 80 ? escapeHtml(desc.substring(0, 80)) + "…" : escapeHtml(desc);
+
+          // Date display
+          var dateDisplay = a.date ? escapeHtml(a.date) : "–";
+
+          // Image thumbnail or dash
+          var imageDisplay = a.imageUrl
+            ? '<img src="' + escapeHtml(a.imageUrl) + '" alt="" '
+            + 'style="width:48px;height:48px;object-fit:cover;border-radius:4px;" '
+            + 'onerror="this.style.display=\'none\'">'
+            : "–";
+
+          // Action buttons
+          var editBtn = '<button class="inline-flex items-center px-3 py-1 text-sm border border-primary text-primary rounded hover:bg-primary hover:text-white min-h-[44px] me-1 btn-edit-achievement" '
+            + 'data-id="' + escapeHtml(id) + '">'
+            + t("btn_edit")
+            + '</button>';
+
+          var deleteBtn = '<button class="inline-flex items-center px-3 py-1 text-sm border border-danger text-danger rounded hover:bg-danger hover:text-white min-h-[44px] btn-delete-achievement" '
+            + 'data-id="' + escapeHtml(id) + '">'
+            + t("btn_delete")
+            + '</button>';
+
+          var row = '<tr>'
+            + '<td data-label="' + t("form_title") + '" class="py-2 px-3 align-middle border-b border-border">' + escapeHtml(a.title || "–") + '</td>'
+            + '<td data-label="' + t("form_description") + '" class="py-2 px-3 align-middle border-b border-border">' + descDisplay + '</td>'
+            + '<td data-label="' + t("form_date") + '" class="py-2 px-3 align-middle border-b border-border">' + dateDisplay + '</td>'
+            + '<td data-label="' + t("form_image_url") + '" class="py-2 px-3 align-middle border-b border-border">' + imageDisplay + '</td>'
+            + '<td data-label="' + t("col_actions") + '" class="py-2 px-3 align-middle border-b border-border">' + editBtn + deleteBtn + '</td>'
+            + '</tr>';
+
+          tbody.insertAdjacentHTML("beforeend", row);
+        });
+
+        // Show/hide table vs empty message
+        document.getElementById("achievements-loading").classList.add("hidden");
+        if (hasRows) {
+          document.getElementById("achievements-table-wrapper").classList.remove("hidden");
+          document.getElementById("no-achievements-msg").classList.add("hidden");
+        } else {
+          document.getElementById("achievements-table-wrapper").classList.add("hidden");
+          document.getElementById("no-achievements-msg").classList.remove("hidden");
+        }
+      }).catch(function (err) {
+        console.error("Error loading achievements:", err);
+        document.getElementById("achievements-loading").classList.add("hidden");
+        showToast(t("err_firebase_unreachable"), "danger");
+      });
+    }
+
+    // ── Add achievement button ───────────────────────────────────────────────
+    // Task 19.2: Opens modal in "create" mode (clear form)
+    document.getElementById("add-achievement-btn").addEventListener("click", function () {
+      clearForm();
+      var titleEl = document.getElementById("achievement-modal-title");
+      titleEl.setAttribute("data-i18n", "btn_add_achievement");
+      titleEl.textContent = t("btn_add_achievement");
+      achievementModal.show();
+    });
+
+    // ── Edit button (delegated) ──────────────────────────────────────────────
+    // Task 19.2: Fetches achievement from RTDB, populates form, opens modal in "edit" mode
+    document.getElementById("achievements-tbody").addEventListener("click", function (e) {
+      var editBtn = e.target.closest(".btn-edit-achievement");
+      if (editBtn) {
+        var id = editBtn.getAttribute("data-id");
+        db.ref("achievements/" + id).once("value").then(function (snap) {
+          var achievement = snap.val();
+          if (!achievement) {
+            showToast(t("err_firebase_unreachable"), "danger");
+            return;
+          }
+          populateForm(id, achievement);
+          var titleEl = document.getElementById("achievement-modal-title");
+          titleEl.setAttribute("data-i18n", "btn_edit");
+          titleEl.textContent = t("btn_edit");
+          achievementModal.show();
+        }).catch(function (err) {
+          console.error("Error loading achievement for edit:", err);
+          showToast(t("err_firebase_unreachable"), "danger");
+        });
+      }
+    });
+
+    // ── Delete button (delegated) ────────────────────────────────────────────
+    // Task 19.3: Removes the achievement record from /achievements/{id} in RTDB
+    // Requirements: 9.3
+    document.getElementById("achievements-tbody").addEventListener("click", function (e) {
+      var deleteBtn = e.target.closest(".btn-delete-achievement");
+      if (deleteBtn) {
+        var id = deleteBtn.getAttribute("data-id");
+        db.ref("achievements/" + id).remove().then(function () {
+          showToast(t("confirm_deleted"), "success");
+          loadAchievements();
+        }).catch(function (err) {
+          console.error("Error deleting achievement:", err);
+          showToast(t("err_firebase_unreachable"), "danger");
+        });
+      }
+    });
+
+    // ── Save achievement button ──────────────────────────────────────────────
+    // Task 19.2: Validates form, writes to RTDB, closes modal, reloads table
+    // Requirements: 9.1, 9.2
+    document.getElementById("save-achievement-btn").addEventListener("click", function () {
+      clearFormErrors();
+
+      var id = document.getElementById("achievement-id").value.trim();
+      var title = document.getElementById("a-title").value.trim();
+      var description = document.getElementById("a-description").value.trim();
+      var date = document.getElementById("a-date").value;
+      var imageUrl = document.getElementById("a-image-url").value.trim();
+
+      // Validate required fields: title, description, date
+      var hasErrors = false;
+
+      if (!title) {
+        document.getElementById("a-title").classList.add("is-invalid");
+        document.getElementById("err-a-title").textContent = t("form_title") + " " + (localStorage.getItem("lang") === "fr" ? "est obligatoire" : "مطلوب");
+        hasErrors = true;
+      }
+
+      if (!description) {
+        document.getElementById("a-description").classList.add("is-invalid");
+        document.getElementById("err-a-description").textContent = t("form_description") + " " + (localStorage.getItem("lang") === "fr" ? "est obligatoire" : "مطلوب");
+        hasErrors = true;
+      }
+
+      if (!date) {
+        document.getElementById("a-date").classList.add("is-invalid");
+        document.getElementById("err-a-date").textContent = t("form_date") + " " + (localStorage.getItem("lang") === "fr" ? "est obligatoire" : "مطلوب");
+        hasErrors = true;
+      }
+
+      if (hasErrors) return;
+
+      var saveBtn = document.getElementById("save-achievement-btn");
+      saveBtn.disabled = true;
+
+      var formData = {
+        title: title,
+        description: description,
+        date: date
+      };
+
+      // Only include imageUrl if provided (optional field)
+      if (imageUrl) {
+        formData.imageUrl = imageUrl;
+      }
+
+      if (id) {
+        // ── Edit existing achievement (Requirement 9.2) ──────────────────────
+        db.ref("achievements/" + id).update(formData).then(function () {
+          achievementModal.hide();
+          showToast(t("confirm_achievement_saved"), "success");
+          loadAchievements();
+        }).catch(function (err) {
+          console.error("Error updating achievement:", err);
+          showToast(t("err_firebase_unreachable"), "danger");
+        }).finally(function () {
+          saveBtn.disabled = false;
+        });
+      } else {
+        // ── Create new achievement (Requirement 9.1) ─────────────────────────
+        var newAchievement = Object.assign({}, formData, {
+          createdAt: Date.now()
+        });
+
+        db.ref("achievements").push(newAchievement).then(function () {
+          achievementModal.hide();
+          showToast(t("confirm_achievement_saved"), "success");
+          loadAchievements();
+        }).catch(function (err) {
+          console.error("Error creating achievement:", err);
+          showToast(t("err_firebase_unreachable"), "danger");
+        }).finally(function () {
+          saveBtn.disabled = false;
+        });
+      }
+    });
+
+    // ── Reset form errors when modal is closed ───────────────────────────────
+    achievementModalEl.addEventListener("hidden.bs.modal", function () {
+      clearFormErrors();
+    });
+
+    // ── Initial load ─────────────────────────────────────────────────────────
+    document.addEventListener("DOMContentLoaded", function () {
+      loadAchievements();
+    });
+  </script>
+</body>
+
+</html>

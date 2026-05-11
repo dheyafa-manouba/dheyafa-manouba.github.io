@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<!-- Admin Registrations Management: view and manage client registrations per voyage -->
+<!-- Requirements: 7.1, 7.2, 7.3, 7.4, 7.5 -->
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>إدارة التسجيلات – لوحة الإدارة</title>
+  <!-- Tailwind CSS v4 Play CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    @theme {
+      --color-primary: #1aace2;
+      --color-primary-dark: #0f86b2;
+      --color-primary-light: #ebf6f5;
+      --color-primary-mid: #5bbee1;
+      --color-accent: #fb9610;
+      --color-accent-dark: #c8740a;
+      --color-accent-light: #ebf6f5;
+      --color-success: #1f7a53;
+      --color-danger: #a53d38;
+      --color-warning: #8a6a1f;
+      --color-text: #163042;
+      --color-text-muted: #4d6776;
+      --color-border: #bfe3ef;
+      --color-bg-alt: #ebf6f5;
+      --color-bg-warm: #f5eec4;
+      --font-size-base: 1.125rem;
+      --font-size-sm: 1rem;
+      --font-size-lg: 1.25rem;
+      --border-radius: 0.5rem;
+      --border-radius-lg: 0.875rem;
+      --touch-target-min: 44px;
+    }
+  </style>
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="../css/custom.css" />
+</head>
+<!-- Body hidden by default; revealed after auth check passes (Requirement 5.6) -->
+
+<body style="display:none" class="admin-shell">
+
+  <!-- Admin navbar -->
+  <nav class="admin-navbar bg-white/95 border-b border-primary-light shadow-sm" role="navigation">
+    <div class="mx-auto px-4 flex items-center justify-between min-h-[44px] max-w-7xl">
+      <a class="flex items-center gap-2 font-bold text-primary-dark text-lg min-h-[44px] no-underline"
+        href="index.html">
+        <img src="../img/logo.png" alt="Dheyafa Tourism Logo" class="navbar-logo">
+        <span data-i18n="admin_dashboard">لوحة التحكم</span>
+      </a>
+      <div class="admin-lang-switch flex items-center gap-2">
+        <button
+          class="lang-btn admin-lang-btn min-h-[44px] min-w-[44px] bg-primary-light border border-primary text-primary-dark font-bold text-sm rounded px-3 hover:bg-primary hover:text-white transition-colors"
+          onclick="setLanguage('ar')">AR</button>
+        <button
+          class="lang-btn admin-lang-btn min-h-[44px] min-w-[44px] bg-primary-light border border-primary text-primary-dark font-bold text-sm rounded px-3 hover:bg-primary hover:text-white transition-colors"
+          onclick="setLanguage('fr')">FR</button>
+        <button
+          class="min-h-[44px] px-4 py-2 bg-danger text-white font-semibold text-sm rounded hover:bg-red-700 transition-colors"
+          id="logout-btn" data-i18n="admin_logout">تسجيل الخروج</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="mx-auto px-4 max-w-7xl py-8">
+    <div class="admin-header flex justify-between items-center mb-4">
+      <h1 class="admin-page-title text-2xl font-bold" data-i18n="admin_registrations">التسجيلات</h1>
+      <button
+        class="inline-flex items-center justify-center min-h-[44px] px-4 py-2 bg-success text-white font-semibold rounded hover:bg-green-700 transition-colors"
+        id="export-csv-btn" data-i18n="btn_export_csv">تصدير CSV</button>
+    </div>
+
+    <!-- Voyage filter (Task 17.1) -->
+    <div class="admin-toolbar mb-4">
+      <label for="voyage-filter" class="block text-sm font-medium text-text mb-1"
+        data-i18n="admin_filter_by_voyage">تصفية حسب الرحلة</label>
+      <select
+        class="border border-border rounded px-3 py-2 text-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 min-h-[44px]"
+        id="voyage-filter" style="max-width:400px">
+        <option value="" data-i18n="admin_all_voyages">جميع الرحلات</option>
+      </select>
+    </div>
+
+    <!-- Loading spinner -->
+    <div id="reg-loading" class="text-center py-4">
+      <div class="inline-block w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"
+        role="status" aria-label="loading">
+        <span class="sr-only" data-i18n="loading">جارٍ التحميل...</span>
+      </div>
+    </div>
+
+    <!-- Registrations table (Task 17.1) -->
+    <div class="admin-table-wrap overflow-x-auto hidden" id="reg-table-wrapper">
+      <table class="admin-data-table density-compact w-full text-base text-text" id="reg-table">
+        <thead class="bg-primary-mid text-primary-dark font-bold text-sm">
+          <tr class="border-b border-border">
+            <th class="py-2 px-3 text-start" data-i18n="form_full_name">الاسم</th>
+            <th class="py-2 px-3 text-start" data-i18n="form_phone">الهاتف</th>
+            <th class="py-2 px-3 text-start" data-i18n="form_email">البريد</th>
+            <th class="py-2 px-3 text-start" data-i18n="form_passport">جواز السفر</th>
+            <th class="py-2 px-3 text-start" data-i18n="form_seats_requested">المقاعد</th>
+            <th class="py-2 px-3 text-start" data-i18n="col_status">الحالة</th>
+            <th class="py-2 px-3 text-start" data-i18n="col_created_at">تاريخ الإنشاء</th>
+            <th class="py-2 px-3 text-start" data-i18n="col_actions">الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="reg-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- No registrations message -->
+    <div id="no-reg-msg" class="hidden text-text-muted text-center py-4" data-i18n="admin_no_registrations">
+      لا توجد تسجيلات
+    </div>
+  </main>
+
+  <!-- Firebase JS SDK v9 compat -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <!-- Shared JS modules — firebase-init and auth-guard MUST be first -->
+  <script src="../js/firebase-init.js"></script>
+  <script src="../js/auth-guard.js"></script>
+  <script src="../js/i18n.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/toast.js"></script>
+
+  <script>
+    // ── State ────────────────────────────────────────────────────────────────
+    /** All registrations loaded from RTDB, keyed by Firebase push ID */
+    var allRegistrations = {};
+    /** All voyages loaded from RTDB, keyed by Firebase push ID */
+    var allVoyages = {};
+    /** Currently filtered registrations (array of {id, ...fields}) */
+    var filteredRegistrations = [];
+
+    // ── Logout ───────────────────────────────────────────────────────────────
+    document.getElementById("logout-btn").addEventListener("click", function () {
+      firebase.auth().signOut().then(function () {
+        window.location.href = "login.html";
+      });
+    });
+
+    // ── Filter registrations by voyage ───────────────────────────────────────
+    /**
+     * Filters allRegistrations by the selected voyageId.
+     * Returns all registrations when voyageId is empty string.
+     *
+     * Property 12: Registration filter returns only registrations for the
+     * selected voyage — for any voyageId, the result contains only
+     * registrations where registration.voyageId === voyageId.
+     *
+     * @param {string} voyageId - The selected voyage ID, or "" for all
+     * @returns {Array<Object>} Filtered array of registration objects (with id)
+     *
+     * Requirements: 7.1
+     */
+    function filterRegistrations(voyageId) {
+      var result = [];
+      Object.keys(allRegistrations).forEach(function (id) {
+        var reg = allRegistrations[id];
+        if (!voyageId || reg.voyageId === voyageId) {
+          result.push(Object.assign({ id: id }, reg));
+        }
+      });
+      return result;
+    }
+
+    // ── Render registrations table ───────────────────────────────────────────
+    /**
+     * Renders the registrations table for the given array of registration objects.
+     * Shows Confirm button for pending registrations.
+     * Shows Cancel button for pending and confirmed registrations.
+     *
+     * @param {Array<Object>} regs - Array of registration objects (each with id)
+     *
+     * Requirements: 7.1
+     */
+    function renderTable(regs) {
+      var tbody = document.getElementById("reg-tbody");
+      tbody.innerHTML = "";
+
+      document.getElementById("reg-loading").classList.add("hidden");
+
+      if (!regs || regs.length === 0) {
+        document.getElementById("reg-table-wrapper").classList.add("hidden");
+        document.getElementById("no-reg-msg").classList.remove("hidden");
+        return;
+      }
+
+      document.getElementById("reg-table-wrapper").classList.remove("hidden");
+      document.getElementById("no-reg-msg").classList.add("hidden");
+
+      regs.forEach(function (reg) {
+        // Status badge
+        var statusClass = "bg-gray-500 text-white";
+        var statusKey = "status_pending";
+        if (reg.status === "confirmed") {
+          statusClass = "bg-success text-white";
+          statusKey = "status_confirmed";
+        } else if (reg.status === "cancelled") {
+          statusClass = "bg-danger text-white";
+          statusKey = "status_cancelled";
+        }
+        var statusBadge = '<span class="inline-block px-2 py-0.5 text-xs font-semibold rounded ' + statusClass + '">' + t(statusKey) + '</span>';
+
+        // Formatted creation date
+        var createdAtStr = reg.createdAt
+          ? new Date(reg.createdAt).toLocaleString()
+          : "–";
+
+        // Action buttons
+        var actions = "";
+        if (reg.status === "pending") {
+          actions += '<button class="inline-flex items-center px-3 py-1 text-sm bg-success text-white rounded hover:bg-green-700 min-h-[44px] me-1 btn-confirm-reg" '
+            + 'data-id="' + reg.id + '" '
+            + 'data-voyage-id="' + (reg.voyageId || "") + '" '
+            + 'data-seats="' + (reg.seatsRequested || 0) + '">'
+            + t("btn_confirm")
+            + '</button>';
+        }
+        if (reg.status === "pending" || reg.status === "confirmed") {
+          actions += '<button class="inline-flex items-center px-3 py-1 text-sm border border-danger text-danger rounded hover:bg-danger hover:text-white min-h-[44px] btn-cancel-reg" '
+            + 'data-id="' + reg.id + '" '
+            + 'data-voyage-id="' + (reg.voyageId || "") + '" '
+            + 'data-seats="' + (reg.seatsRequested || 0) + '" '
+            + 'data-status="' + reg.status + '">'
+            + t("btn_cancel")
+            + '</button>';
+        }
+
+        var row = '<tr>'
+          + '<td data-label="' + t("form_full_name") + '" class="py-2 px-3 align-middle border-b border-border">' + (reg.fullName || "–") + '</td>'
+          + '<td data-label="' + t("form_phone") + '" class="py-2 px-3 align-middle border-b border-border">' + (reg.phone || "–") + '</td>'
+          + '<td data-label="' + t("form_email") + '" class="py-2 px-3 align-middle border-b border-border">' + (reg.email || "–") + '</td>'
+          + '<td data-label="' + t("form_passport") + '" class="py-2 px-3 align-middle border-b border-border">' + (reg.passportNumber || "–") + '</td>'
+          + '<td data-label="' + t("form_seats_requested") + '" class="py-2 px-3 align-middle border-b border-border">' + (reg.seatsRequested || "–") + '</td>'
+          + '<td data-label="' + t("col_status") + '" class="py-2 px-3 align-middle border-b border-border">' + statusBadge + '</td>'
+          + '<td data-label="' + t("col_created_at") + '" class="py-2 px-3 align-middle border-b border-border">' + createdAtStr + '</td>'
+          + '<td data-label="' + t("col_actions") + '" class="py-2 px-3 align-middle border-b border-border">' + actions + '</td>'
+          + '</tr>';
+
+        tbody.insertAdjacentHTML("beforeend", row);
+      });
+    }
+
+    // ── Load data from RTDB ──────────────────────────────────────────────────
+    /**
+     * Fetches all voyages and registrations from RTDB in parallel.
+     * Populates the voyage filter dropdown and renders the table.
+     *
+     * Task 17.1: Reads /voyages and /registrations, populates filter dropdown,
+     * stores all registrations in memory, renders filterable table.
+     *
+     * Requirements: 7.1
+     */
+    function loadData() {
+      // Show spinner, hide table and empty message
+      document.getElementById("reg-loading").classList.remove("hidden");
+      document.getElementById("reg-table-wrapper").classList.add("hidden");
+      document.getElementById("no-reg-msg").classList.add("hidden");
+
+      Promise.all([
+        db.ref("voyages").once("value"),
+        db.ref("registrations").once("value")
+      ]).then(function (results) {
+        var voyagesSnap = results[0];
+        var registrationsSnap = results[1];
+
+        // ── Store voyages ────────────────────────────────────────────────────
+        allVoyages = {};
+        voyagesSnap.forEach(function (child) {
+          allVoyages[child.key] = child.val();
+        });
+
+        // ── Populate voyage filter dropdown ──────────────────────────────────
+        var filterSelect = document.getElementById("voyage-filter");
+        // Keep only the "all voyages" option, remove previous voyage options
+        while (filterSelect.options.length > 1) {
+          filterSelect.remove(1);
+        }
+        Object.keys(allVoyages).forEach(function (id) {
+          var v = allVoyages[id];
+          var option = document.createElement("option");
+          option.value = id;
+          option.textContent = (v.destination || id)
+            + (v.departureDate ? " – " + v.departureDate : "");
+          filterSelect.appendChild(option);
+        });
+
+        // ── Store registrations ──────────────────────────────────────────────
+        allRegistrations = {};
+        registrationsSnap.forEach(function (child) {
+          allRegistrations[child.key] = child.val();
+        });
+
+        // ── Render table with current filter ────────────────────────────────
+        var selectedVoyageId = filterSelect.value;
+        filteredRegistrations = filterRegistrations(selectedVoyageId);
+        renderTable(filteredRegistrations);
+
+      }).catch(function (err) {
+        console.error("Error loading registrations:", err);
+        document.getElementById("reg-loading").classList.add("hidden");
+        showToast(t("err_firebase_unreachable"), "danger");
+      });
+    }
+
+    // ── Voyage filter change handler ─────────────────────────────────────────
+    /**
+     * Re-renders the table when the voyage filter selection changes.
+     * Task 17.1: Filter re-renders table for selected voyage (or all).
+     *
+     * Requirements: 7.1
+     */
+    document.getElementById("voyage-filter").addEventListener("change", function () {
+      var selectedVoyageId = this.value;
+      filteredRegistrations = filterRegistrations(selectedVoyageId);
+      renderTable(filteredRegistrations);
+    });
+
+    // ── Confirm action (Task 17.3) ───────────────────────────────────────────
+    /**
+     * Handles the Confirm button click (delegated from tbody).
+     *
+     * Reads current availableSeats for the voyage; if availableSeats >= seatsRequested,
+     * uses a Firebase transaction to atomically update registration.status = "confirmed"
+     * and decrement availableSeats. Otherwise shows an error toast.
+     *
+     * Requirements: 7.2, 7.4
+     */
+    document.getElementById("reg-tbody").addEventListener("click", function (e) {
+      var confirmBtn = e.target.closest(".btn-confirm-reg");
+      if (!confirmBtn) return;
+
+      var regId = confirmBtn.getAttribute("data-id");
+      var voyageId = confirmBtn.getAttribute("data-voyage-id");
+      var seatsRequested = parseInt(confirmBtn.getAttribute("data-seats"), 10) || 0;
+
+      // Disable button to prevent double-click
+      confirmBtn.disabled = true;
+
+      // Read current availableSeats for the voyage
+      db.ref("voyages/" + voyageId + "/availableSeats").once("value")
+        .then(function (snap) {
+          var availableSeats = snap.val();
+
+          // Guard: check seat availability (Requirement 7.4)
+          if (availableSeats === null || availableSeats === undefined) {
+            showToast(t("err_voyage_not_found"), "danger");
+            confirmBtn.disabled = false;
+            return;
+          }
+
+          if (availableSeats < seatsRequested) {
+            showToast(t("err_not_enough_seats"), "danger");
+            confirmBtn.disabled = false;
+            return;
+          }
+
+          // Use a Firebase transaction on availableSeats to atomically decrement
+          // and prevent double-confirmation (Requirement 7.4)
+          db.ref("voyages/" + voyageId + "/availableSeats").transaction(function (currentSeats) {
+            if (currentSeats === null) return currentSeats;
+            if (currentSeats < seatsRequested) {
+              // Abort transaction — not enough seats
+              return undefined;
+            }
+            return currentSeats - seatsRequested;
+          }).then(function (result) {
+            if (!result.committed) {
+              // Transaction aborted — seats were taken by another operation
+              showToast(t("err_not_enough_seats"), "danger");
+              confirmBtn.disabled = false;
+              return;
+            }
+
+            // Transaction succeeded — now update registration status
+            return db.ref("registrations/" + regId + "/status").set("confirmed");
+          }).then(function () {
+            showToast(t("confirm_status_confirmed"), "success");
+            loadData();
+          }).catch(function (err) {
+            console.error("Error confirming registration:", err);
+            showToast(t("err_firebase_unreachable"), "danger");
+            confirmBtn.disabled = false;
+          });
+        })
+        .catch(function (err) {
+          console.error("Error reading availableSeats:", err);
+          showToast(t("err_firebase_unreachable"), "danger");
+          confirmBtn.disabled = false;
+        });
+    });
+
+    // ── Cancel action (Task 17.4) ────────────────────────────────────────────
+    /**
+     * Handles the Cancel button click (delegated from tbody).
+     *
+     * Updates registration.status = "cancelled" and increments availableSeats
+     * by seatsRequested in RTDB. Only increments seats if the registration was
+     * previously confirmed (to avoid double-incrementing for pending cancellations).
+     *
+     * Requirements: 7.3
+     */
+    document.getElementById("reg-tbody").addEventListener("click", function (e) {
+      var cancelBtn = e.target.closest(".btn-cancel-reg");
+      if (!cancelBtn) return;
+
+      var regId = cancelBtn.getAttribute("data-id");
+      var voyageId = cancelBtn.getAttribute("data-voyage-id");
+      var seatsRequested = parseInt(cancelBtn.getAttribute("data-seats"), 10) || 0;
+      var currentStatus = cancelBtn.getAttribute("data-status");
+
+      // Disable button to prevent double-click
+      cancelBtn.disabled = true;
+
+      // Update registration status to cancelled
+      db.ref("registrations/" + regId + "/status").set("cancelled")
+        .then(function () {
+          // Only restore seats if the registration was confirmed
+          // (pending registrations never decremented availableSeats)
+          if (currentStatus === "confirmed" && voyageId && seatsRequested > 0) {
+            return db.ref("voyages/" + voyageId + "/availableSeats").transaction(function (currentSeats) {
+              if (currentSeats === null) return currentSeats;
+              return currentSeats + seatsRequested;
+            });
+          }
+          return Promise.resolve();
+        })
+        .then(function () {
+          showToast(t("confirm_status_cancelled"), "success");
+          loadData();
+        })
+        .catch(function (err) {
+          console.error("Error cancelling registration:", err);
+          showToast(t("err_firebase_unreachable"), "danger");
+          cancelBtn.disabled = false;
+        });
+    });
+
+    // ── CSV export (Task 17.6) ───────────────────────────────────────────────
+    /**
+     * Exports the currently filtered registrations as a UTF-8 BOM CSV file.
+     * Uses exportToCSV() from utils.js.
+     * Filename includes the selected voyage name (or "all" if no filter).
+     *
+     * Requirements: 7.5
+     */
+    document.getElementById("export-csv-btn").addEventListener("click", function () {
+      var filterSelect = document.getElementById("voyage-filter");
+      var selectedVoyageId = filterSelect.value;
+
+      // Determine filename based on selected voyage
+      var voyageName = "all";
+      if (selectedVoyageId && allVoyages[selectedVoyageId]) {
+        voyageName = (allVoyages[selectedVoyageId].destination || selectedVoyageId)
+          .replace(/[^a-zA-Z0-9\u0600-\u06FF\s-]/g, "")
+          .trim()
+          .replace(/\s+/g, "-");
+      }
+
+      var filename = "registrations-" + voyageName + ".csv";
+      exportToCSV(filteredRegistrations, filename);
+    });
+
+    // ── Initial load ─────────────────────────────────────────────────────────
+    document.addEventListener("DOMContentLoaded", function () {
+      loadData();
+    });
+  </script>
+</body>
+
+</html>

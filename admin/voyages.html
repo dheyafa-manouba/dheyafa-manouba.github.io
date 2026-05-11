@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<!-- Admin Voyages Management: CRUD for voyage and Omra packages -->
+<!-- Requirements: 6.1, 6.2, 6.3, 6.4, 6.5 -->
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>إدارة الرحلات – لوحة الإدارة</title>
+  <!-- Tailwind CSS v4 Play CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style type="text/tailwindcss">
+    @theme {
+      --color-primary: #1aace2;
+      --color-primary-dark: #0f86b2;
+      --color-primary-light: #ebf6f5;
+      --color-primary-mid: #5bbee1;
+      --color-accent: #fb9610;
+      --color-accent-dark: #c8740a;
+      --color-accent-light: #ebf6f5;
+      --color-success: #1f7a53;
+      --color-danger: #a53d38;
+      --color-warning: #8a6a1f;
+      --color-text: #163042;
+      --color-text-muted: #4d6776;
+      --color-border: #bfe3ef;
+      --color-bg-alt: #ebf6f5;
+      --color-bg-warm: #f5eec4;
+      --font-size-base: 1.125rem;
+      --font-size-sm: 1rem;
+      --font-size-lg: 1.25rem;
+      --border-radius: 0.5rem;
+      --border-radius-lg: 0.875rem;
+      --touch-target-min: 44px;
+    }
+  </style>
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="../css/custom.css" />
+</head>
+<!-- Body hidden by default; revealed after auth check passes (Requirement 5.6) -->
+
+<body style="display:none" class="admin-shell">
+
+  <!-- Admin navbar -->
+  <nav class="admin-navbar bg-white/95 border-b border-primary-light shadow-sm" role="navigation">
+    <div class="mx-auto px-4 flex items-center justify-between min-h-[44px] max-w-7xl">
+      <a class="flex items-center gap-2 font-bold text-primary-dark text-lg min-h-[44px] no-underline"
+        href="index.html">
+        <img src="../img/logo.png" alt="Dheyafa Tourism Logo" class="navbar-logo">
+        <span data-i18n="admin_dashboard">لوحة التحكم</span>
+      </a>
+      <div class="admin-lang-switch flex items-center gap-2">
+        <button
+          class="lang-btn admin-lang-btn min-h-[44px] min-w-[44px] bg-primary-light border border-primary text-primary-dark font-bold text-sm rounded px-3 hover:bg-primary hover:text-white transition-colors"
+          onclick="setLanguage('ar')">AR</button>
+        <button
+          class="lang-btn admin-lang-btn min-h-[44px] min-w-[44px] bg-primary-light border border-primary text-primary-dark font-bold text-sm rounded px-3 hover:bg-primary hover:text-white transition-colors"
+          onclick="setLanguage('fr')">FR</button>
+        <button
+          class="min-h-[44px] px-4 py-2 bg-danger text-white font-semibold text-sm rounded hover:bg-red-700 transition-colors"
+          id="logout-btn" data-i18n="admin_logout">تسجيل الخروج</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="mx-auto px-4 max-w-7xl py-8">
+    <div class="admin-header flex justify-between items-center mb-4">
+      <h1 class="admin-page-title text-2xl font-bold" data-i18n="admin_voyages">الرحلات</h1>
+      <button
+        class="inline-flex items-center justify-center min-h-[44px] px-4 py-2 bg-primary text-white font-semibold rounded hover:bg-primary-dark transition-colors"
+        id="add-voyage-btn" data-i18n="btn_add_voyage">إضافة رحلة</button>
+    </div>
+
+    <!-- Loading spinner -->
+    <div id="voyages-loading" class="text-center py-4">
+      <div class="inline-block w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"
+        role="status" aria-label="loading">
+        <span class="sr-only" data-i18n="loading">جارٍ التحميل...</span>
+      </div>
+    </div>
+
+    <!-- Voyages table -->
+    <div class="admin-table-wrap overflow-x-auto hidden" id="voyages-table-wrapper">
+      <table class="admin-data-table density-comfortable w-full text-base text-text" id="voyages-table">
+        <thead class="bg-primary-mid text-primary-dark font-bold text-sm">
+          <tr class="border-b border-border">
+            <th class="py-2 px-3 text-start" data-i18n="form_destination">الوجهة</th>
+            <th class="py-2 px-3 text-start" data-i18n="form_type">النوع</th>
+            <th class="py-2 px-3 text-start" data-i18n="form_departure_date">تاريخ المغادرة</th>
+            <th class="py-2 px-3 text-start" data-i18n="col_status">الحالة</th>
+            <th class="py-2 px-3 text-start" data-i18n="col_registrations">التسجيلات</th>
+            <th class="py-2 px-3 text-start" data-i18n="available_seats">مقاعد متاحة</th>
+            <th class="py-2 px-3 text-start" data-i18n="col_actions">الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="voyages-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- No voyages message -->
+    <div id="no-voyages-msg" class="hidden text-text-muted text-center py-4" data-i18n="admin_no_voyages">
+      لا توجد رحلات
+    </div>
+  </main>
+
+  <!-- Create/Edit Modal -->
+  <div class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50" id="voyage-modal" role="dialog"
+    aria-modal="true" aria-labelledby="voyage-modal-title" aria-hidden="true" tabindex="-1">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto admin-modal-surface">
+      <div class="flex items-center justify-between p-4 border-b border-border">
+        <h2 class="text-lg font-semibold text-primary-dark" id="voyage-modal-title" data-i18n="btn_add_voyage">إضافة
+          رحلة</h2>
+        <button type="button"
+          class="modal-close-btn min-h-[44px] min-w-[44px] flex items-center justify-center text-text-muted hover:text-text rounded transition-colors"
+          aria-label="Close">✕</button>
+      </div>
+      <div class="p-4">
+        <form id="voyage-form" novalidate>
+          <input type="hidden" id="voyage-id">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="v-destination" class="block text-sm font-medium text-text mb-1"
+                data-i18n="form_destination">الوجهة</label>
+              <input type="text"
+                class="w-full border border-border rounded px-3 py-2 text-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 min-h-[44px]"
+                id="v-destination" data-i18n-placeholder="ph_destination">
+              <div class="text-danger text-sm mt-1" id="err-v-destination"></div>
+            </div>
+            <div>
+              <label for="v-type" class="block text-sm font-medium text-text mb-1" data-i18n="form_type">النوع</label>
+              <select
+                class="w-full border border-border rounded px-3 py-2 text-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 min-h-[44px]"
+                id="v-type">
+                <option value="voyage">Voyage</option>
+                <option value="omra">Omra</option>
+              </select>
+            </div>
+            <div>
+              <label for="v-departure" class="block text-sm font-medium text-text mb-1"
+                data-i18n="form_departure_date">تاريخ المغادرة</label>
+              <input type="date"
+                class="w-full border border-border rounded px-3 py-2 text-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 min-h-[44px]"
+                id="v-departure">
+              <div class="text-danger text-sm mt-1" id="err-v-departure"></div>
+            </div>
+            <div>
+              <label for="v-return" class="block text-sm font-medium text-text mb-1" data-i18n="form_return_date">تاريخ
+                العودة</label>
+              <input type="date"
+                class="w-full border border-border rounded px-3 py-2 text-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 min-h-[44px]"
+                id="v-return">
+              <div class="text-danger text-sm mt-1" id="err-v-return"></div>
+            </div>
+            <div>
+              <label for="v-duration" class="block text-sm font-medium text-text mb-1"
+                data-i18n="form_duration_days">المدة (أيام)</label>
+              <input type="number"
+                class="w-full border border-border rounded px-3 py-2 text-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 min-h-[44px]"
+                id="v-duration" min="1">
+            </div>
+            <div>
+              <label for="v-price" class="block text-sm font-medium text-text mb-1" data-i18n="form_price">السعر</label>
+              <input type="number"
+                class="w-full border border-border rounded px-3 py-2 text-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 min-h-[44px]"
+                id="v-price" min="0" step="0.01" data-i18n-placeholder="ph_price">
+              <div class="text-danger text-sm mt-1" id="err-v-price"></div>
+            </div>
+            <div>
+              <label for="v-capacity" class="block text-sm font-medium text-text mb-1" data-i18n="form_capacity">الطاقة
+                الاستيعابية</label>
+              <input type="number"
+                class="w-full border border-border rounded px-3 py-2 text-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 min-h-[44px]"
+                id="v-capacity" min="1" data-i18n-placeholder="ph_capacity">
+              <div class="text-danger text-sm mt-1" id="err-v-capacity"></div>
+            </div>
+            <div class="md:col-span-2">
+              <label for="v-description" class="block text-sm font-medium text-text mb-1"
+                data-i18n="form_description">الوصف</label>
+              <textarea
+                class="w-full border border-border rounded px-3 py-2 text-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                id="v-description" rows="3" data-i18n-placeholder="ph_description"></textarea>
+            </div>
+            <div class="md:col-span-2">
+              <label for="v-itinerary" class="block text-sm font-medium text-text mb-1"
+                data-i18n="form_itinerary">البرنامج التفصيلي</label>
+              <textarea
+                class="w-full border border-border rounded px-3 py-2 text-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                id="v-itinerary" rows="3"></textarea>
+            </div>
+            <div class="md:col-span-2">
+              <label for="v-services" class="block text-sm font-medium text-text mb-1"
+                data-i18n="form_included_services">الخدمات المشمولة</label>
+              <textarea
+                class="w-full border border-border rounded px-3 py-2 text-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                id="v-services" rows="3"></textarea>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="flex justify-end gap-2 p-4 border-t border-border">
+        <button type="button"
+          class="modal-close-btn inline-flex items-center justify-center min-h-[44px] px-4 py-2 border border-border text-text font-semibold rounded hover:bg-bg-alt transition-colors"
+          data-i18n="btn_cancel">إلغاء</button>
+        <button type="button"
+          class="inline-flex items-center justify-center min-h-[44px] px-4 py-2 bg-primary text-white font-semibold rounded hover:bg-primary-dark transition-colors"
+          id="save-voyage-btn" data-i18n="btn_save">حفظ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase JS SDK v9 compat -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <!-- Shared JS modules — firebase-init and auth-guard MUST be first -->
+  <script src="../js/firebase-init.js"></script>
+  <script src="../js/auth-guard.js"></script>
+  <script src="../js/i18n.js"></script>
+  <script src="../js/utils.js"></script>
+  <script src="../js/toast.js"></script>
+  <script src="../js/modal.js"></script>
+  <script src="../js/validation.js"></script>
+
+  <script>
+    // ── Logout ───────────────────────────────────────────────────────────────
+    document.getElementById("logout-btn").addEventListener("click", function () {
+      firebase.auth().signOut().then(function () {
+        window.location.href = "login.html";
+      });
+    });
+
+    // ── Modal instance ───────────────────────────────────────────────────────
+    var voyageModalEl = document.getElementById("voyage-modal");
+    var voyageModal = new VanillaModal(voyageModalEl);
+
+    // ── Clear inline validation errors ───────────────────────────────────────
+    /**
+     * Removes all is-invalid classes and clears error text from the voyage form.
+     */
+    function clearFormErrors() {
+      var fields = ["v-destination", "v-departure", "v-return", "v-price", "v-capacity"];
+      fields.forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.classList.remove("is-invalid");
+      });
+      var errFields = ["err-v-destination", "err-v-departure", "err-v-return", "err-v-price", "err-v-capacity"];
+      errFields.forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.textContent = "";
+      });
+    }
+
+    // ── Show inline validation errors ────────────────────────────────────────
+    /**
+     * Applies Bootstrap is-invalid styling and error messages for each
+     * field that failed validation.
+     *
+     * @param {Object} errors - Map of field name → error message from validateVoyageForm
+     */
+    function showFormErrors(errors) {
+      // Map validation field names to DOM ids
+      var fieldMap = {
+        destination: "v-destination",
+        departureDate: "v-departure",
+        returnDate: "v-return",
+        price: "v-price",
+        capacity: "v-capacity"
+      };
+      var errMap = {
+        destination: "err-v-destination",
+        departureDate: "err-v-departure",
+        returnDate: "err-v-return",
+        price: "err-v-price",
+        capacity: "err-v-capacity"
+      };
+
+      Object.keys(errors).forEach(function (field) {
+        var inputEl = document.getElementById(fieldMap[field]);
+        var errEl = document.getElementById(errMap[field]);
+        if (inputEl) inputEl.classList.add("is-invalid");
+        if (errEl) errEl.textContent = errors[field];
+      });
+    }
+
+    // ── Clear form fields ────────────────────────────────────────────────────
+    /**
+     * Resets all voyage form fields to empty/default values.
+     */
+    function clearForm() {
+      document.getElementById("voyage-id").value = "";
+      document.getElementById("v-destination").value = "";
+      document.getElementById("v-type").value = "voyage";
+      document.getElementById("v-departure").value = "";
+      document.getElementById("v-return").value = "";
+      document.getElementById("v-duration").value = "";
+      document.getElementById("v-price").value = "";
+      document.getElementById("v-capacity").value = "";
+      document.getElementById("v-description").value = "";
+      document.getElementById("v-itinerary").value = "";
+      document.getElementById("v-services").value = "";
+      clearFormErrors();
+    }
+
+    // ── Populate form for editing ────────────────────────────────────────────
+    /**
+     * Fills the voyage form with data from an existing voyage record.
+     *
+     * @param {string} id     - Firebase key of the voyage
+     * @param {Object} voyage - Voyage data object from RTDB
+     */
+    function populateForm(id, voyage) {
+      document.getElementById("voyage-id").value = id;
+      document.getElementById("v-destination").value = voyage.destination || "";
+      document.getElementById("v-type").value = voyage.type || "voyage";
+      document.getElementById("v-departure").value = voyage.departureDate || "";
+      document.getElementById("v-return").value = voyage.returnDate || "";
+      document.getElementById("v-duration").value = voyage.durationDays || "";
+      document.getElementById("v-price").value = voyage.price || "";
+      document.getElementById("v-capacity").value = voyage.capacity || "";
+      document.getElementById("v-description").value = voyage.description || "";
+      document.getElementById("v-itinerary").value = voyage.itinerary || "";
+      document.getElementById("v-services").value = voyage.includedServices || "";
+      clearFormErrors();
+    }
+
+    // ── Render table rows ────────────────────────────────────────────────────
+    /**
+     * Renders the voyages management table.
+     *
+     * Task 16.1: Reads all voyages (active and archived) from /voyages and
+     * counts registrations per voyage from /registrations.
+     *
+     * @param {Object} voyagesSnap      - Firebase snapshot of /voyages
+     * @param {Object} registrationsSnap - Firebase snapshot of /registrations
+     *
+     * Requirements: 6.5
+     */
+    function renderTable(voyagesSnap, registrationsSnap) {
+      var tbody = document.getElementById("voyages-tbody");
+      tbody.innerHTML = "";
+
+      // Build registration count map: voyageId → count
+      var regCountMap = {};
+      if (registrationsSnap) {
+        registrationsSnap.forEach(function (child) {
+          var reg = child.val();
+          if (reg && reg.voyageId) {
+            regCountMap[reg.voyageId] = (regCountMap[reg.voyageId] || 0) + 1;
+          }
+        });
+      }
+
+      var hasRows = false;
+
+      if (voyagesSnap) {
+        voyagesSnap.forEach(function (child) {
+          var id = child.key;
+          var v = child.val();
+          if (!v) return;
+
+          hasRows = true;
+
+          // Status badge
+          var statusClass = v.status === "active" ? "bg-success text-white" : "bg-gray-500 text-white";
+          var statusLabel = v.status === "active" ? t("status_active") : t("status_archived");
+          var statusBadge = '<span class="inline-block px-2 py-0.5 text-xs font-semibold rounded ' + statusClass + '">' + statusLabel + '</span>';
+
+          // Type badge
+          var typeClass = v.type === "omra" ? "bg-sky-400 text-gray-900" : "bg-primary text-white";
+          var typeLabel = v.type === "omra" ? "Omra" : "Voyage";
+          var typeBadge = '<span class="inline-block px-2 py-0.5 text-xs font-semibold rounded ' + typeClass + '">' + typeLabel + '</span>';
+
+          // Registration count
+          var regCount = regCountMap[id] || 0;
+
+          // Available seats
+          var availableSeats = (v.availableSeats !== undefined) ? v.availableSeats : (v.capacity || 0);
+
+          // Departure date (formatted)
+          var depDate = v.departureDate ? formatDate(v.departureDate) : "–";
+
+          // Action buttons
+          var editBtn = '<button class="inline-flex items-center px-3 py-1 text-sm border border-primary text-primary rounded hover:bg-primary hover:text-white min-h-[44px] me-1 btn-edit-voyage" '
+            + 'data-id="' + id + '" data-i18n="btn_edit">' + t("btn_edit") + '</button>';
+
+          var archiveBtn = "";
+          if (v.status === "active") {
+            archiveBtn = '<button class="inline-flex items-center px-3 py-1 text-sm border border-warning text-warning rounded hover:bg-warning hover:text-white min-h-[44px] btn-archive-voyage" '
+              + 'data-id="' + id + '" data-i18n="btn_archive">' + t("btn_archive") + '</button>';
+          }
+
+          var row = '<tr>'
+            + '<td data-label="' + t("form_destination") + '" class="py-2 px-3 align-middle border-b border-border">' + (v.destination || "–") + '</td>'
+            + '<td data-label="' + t("form_type") + '" class="py-2 px-3 align-middle border-b border-border">' + typeBadge + '</td>'
+            + '<td data-label="' + t("form_departure_date") + '" class="py-2 px-3 align-middle border-b border-border">' + depDate + '</td>'
+            + '<td data-label="' + t("col_status") + '" class="py-2 px-3 align-middle border-b border-border">' + statusBadge + '</td>'
+            + '<td data-label="' + t("col_registrations") + '" class="py-2 px-3 align-middle border-b border-border">' + regCount + '</td>'
+            + '<td data-label="' + t("available_seats") + '" class="py-2 px-3 align-middle border-b border-border">' + availableSeats + '</td>'
+            + '<td data-label="' + t("col_actions") + '" class="py-2 px-3 align-middle border-b border-border">' + editBtn + archiveBtn + '</td>'
+            + '</tr>';
+
+          tbody.insertAdjacentHTML("beforeend", row);
+        });
+      }
+
+      // Show/hide table vs empty message
+      document.getElementById("voyages-loading").classList.add("hidden");
+      if (hasRows) {
+        document.getElementById("voyages-table-wrapper").classList.remove("hidden");
+        document.getElementById("no-voyages-msg").classList.add("hidden");
+      } else {
+        document.getElementById("voyages-table-wrapper").classList.add("hidden");
+        document.getElementById("no-voyages-msg").classList.remove("hidden");
+      }
+    }
+
+    // ── Load voyages and registrations ───────────────────────────────────────
+    /**
+     * Fetches all voyages and registrations from RTDB, then renders the table.
+     * Task 16.1: Reads active and archived voyages.
+     *
+     * Requirements: 6.5
+     */
+    function loadVoyages() {
+      // Show spinner, hide table
+      document.getElementById("voyages-loading").classList.remove("hidden");
+      document.getElementById("voyages-table-wrapper").classList.add("hidden");
+      document.getElementById("no-voyages-msg").classList.add("hidden");
+
+      var voyagesRef = db.ref("voyages");
+      var registrationsRef = db.ref("registrations");
+
+      // Fetch both in parallel
+      Promise.all([
+        voyagesRef.once("value"),
+        registrationsRef.once("value")
+      ]).then(function (results) {
+        renderTable(results[0], results[1]);
+      }).catch(function (err) {
+        console.error("Error loading voyages:", err);
+        document.getElementById("voyages-loading").classList.add("hidden");
+        showToast(t("err_firebase_unreachable"), "danger");
+      });
+    }
+
+    // ── Add voyage button ────────────────────────────────────────────────────
+    // Task 16.2: Opens modal in "create" mode
+    document.getElementById("add-voyage-btn").addEventListener("click", function () {
+      clearForm();
+      // Set modal title to "add voyage"
+      var titleEl = document.getElementById("voyage-modal-title");
+      titleEl.setAttribute("data-i18n", "btn_add_voyage");
+      titleEl.textContent = t("btn_add_voyage");
+      voyageModal.show();
+    });
+
+    // ── Edit button (delegated) ──────────────────────────────────────────────
+    // Task 16.2: Opens modal in "edit" mode, populated with voyage data
+    document.getElementById("voyages-tbody").addEventListener("click", function (e) {
+      var editBtn = e.target.closest(".btn-edit-voyage");
+      if (editBtn) {
+        var id = editBtn.getAttribute("data-id");
+        db.ref("voyages/" + id).once("value").then(function (snap) {
+          var voyage = snap.val();
+          if (!voyage) {
+            showToast(t("err_voyage_not_found"), "danger");
+            return;
+          }
+          populateForm(id, voyage);
+          // Set modal title to "edit"
+          var titleEl = document.getElementById("voyage-modal-title");
+          titleEl.setAttribute("data-i18n", "btn_edit");
+          titleEl.textContent = t("btn_edit");
+          voyageModal.show();
+        }).catch(function (err) {
+          console.error("Error loading voyage for edit:", err);
+          showToast(t("err_firebase_unreachable"), "danger");
+        });
+      }
+    });
+
+    // ── Archive button (delegated) ───────────────────────────────────────────
+    // Task 16.4: Sets /voyages/{id}/status to "archived" in RTDB
+    // Requirements: 6.3
+    document.getElementById("voyages-tbody").addEventListener("click", function (e) {
+      var archiveBtn = e.target.closest(".btn-archive-voyage");
+      if (archiveBtn) {
+        var id = archiveBtn.getAttribute("data-id");
+        db.ref("voyages/" + id + "/status").set("archived").then(function () {
+          showToast(t("confirm_archived"), "success");
+          loadVoyages();
+        }).catch(function (err) {
+          console.error("Error archiving voyage:", err);
+          showToast(t("err_firebase_unreachable"), "danger");
+        });
+      }
+    });
+
+    // ── Save voyage button ───────────────────────────────────────────────────
+    // Task 16.2: Validates form, writes to RTDB, closes modal, reloads table
+    // Requirements: 6.1, 6.2, 6.4
+    document.getElementById("save-voyage-btn").addEventListener("click", function () {
+      clearFormErrors();
+
+      var id = document.getElementById("voyage-id").value.trim();
+      var formData = {
+        destination: document.getElementById("v-destination").value.trim(),
+        type: document.getElementById("v-type").value,
+        departureDate: document.getElementById("v-departure").value,
+        returnDate: document.getElementById("v-return").value,
+        durationDays: parseInt(document.getElementById("v-duration").value, 10) || null,
+        price: parseFloat(document.getElementById("v-price").value),
+        capacity: parseInt(document.getElementById("v-capacity").value, 10),
+        description: document.getElementById("v-description").value.trim(),
+        itinerary: document.getElementById("v-itinerary").value.trim(),
+        includedServices: document.getElementById("v-services").value.trim()
+      };
+
+      // Validate required fields (destination, departureDate, returnDate, price, capacity)
+      var result = validateVoyageForm(formData);
+      if (!result.valid) {
+        showFormErrors(result.errors);
+        return;
+      }
+
+      var saveBtn = document.getElementById("save-voyage-btn");
+      saveBtn.disabled = true;
+
+      if (id) {
+        // ── Edit existing voyage (Requirement 6.2) ───────────────────────────
+        db.ref("voyages/" + id).update(formData).then(function () {
+          voyageModal.hide();
+          showToast(t("confirm_voyage_saved"), "success");
+          loadVoyages();
+        }).catch(function (err) {
+          console.error("Error updating voyage:", err);
+          showToast(t("err_firebase_unreachable"), "danger");
+        }).finally(function () {
+          saveBtn.disabled = false;
+        });
+      } else {
+        // ── Create new voyage (Requirement 6.1) ──────────────────────────────
+        var newVoyage = Object.assign({}, formData, {
+          status: "active",
+          availableSeats: formData.capacity,
+          createdAt: Date.now()
+        });
+
+        db.ref("voyages").push(newVoyage).then(function () {
+          voyageModal.hide();
+          showToast(t("confirm_voyage_saved"), "success");
+          loadVoyages();
+        }).catch(function (err) {
+          console.error("Error creating voyage:", err);
+          showToast(t("err_firebase_unreachable"), "danger");
+        }).finally(function () {
+          saveBtn.disabled = false;
+        });
+      }
+    });
+
+    // ── Reset form errors when modal is closed ───────────────────────────────
+    voyageModalEl.addEventListener("hidden.bs.modal", function () {
+      clearFormErrors();
+    });
+
+    // ── Initial load ─────────────────────────────────────────────────────────
+    document.addEventListener("DOMContentLoaded", function () {
+      loadVoyages();
+    });
+  </script>
+</body>
+
+</html>
